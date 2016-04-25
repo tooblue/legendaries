@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{ STASH } &nbsp; The oTCG Tradepost Hub</title>
+    <title>Legendaries</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/app.css">
@@ -43,7 +43,7 @@
                         <li><a href="#">TCGs</a></li>
                         <li><a href="#">Players</a></li>
                         <li><a href="https://forum.filler00.com" target="_blank">Forum</a></li>
-                        <li><a href="{{ route('logout') }}">Logout &nbsp; <i class="fa fa-power-off"></i></a></li>
+                        <li><a href="{{ route('app::logout') }}">Logout &nbsp; <i class="fa fa-power-off"></i></a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->

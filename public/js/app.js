@@ -27314,7 +27314,7 @@ router.map({
 router.start(App, '#vue');
 
 },{"./app.vue":34,"./views/collections.vue":39,"./views/dashboard.vue":40,"bootstrap-sass":1,"jquery":2,"vue":31,"vue-resource":19,"vue-router":30}],34:[function(require,module,exports){
-var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n.content[_v-4ea066ad] {\n  position: relative; }\n")
+var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n.content[_v-1fd4faac] {\n  position: relative; }\n")
 'use strict';
 
 var nprogress = require('nprogress');
@@ -27352,14 +27352,14 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"content\" _v-4ea066ad=\"\">\n    <div class=\"row\" _v-4ea066ad=\"\">\n        <div class=\"col-sm-9\" _v-4ea066ad=\"\">\n\n            <router-view _v-4ea066ad=\"\"></router-view>\n\n        </div>\n        <div class=\"col-sm-3\" _v-4ea066ad=\"\">\n\n            <sidebar :user=\"user\" _v-4ea066ad=\"\"></sidebar>\n\n        </div>\n    </div>\n</div>\n\n<modal _v-4ea066ad=\"\"></modal>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"content\" _v-1fd4faac=\"\">\n    <div class=\"row\" _v-1fd4faac=\"\">\n        <div class=\"col-sm-9\" _v-1fd4faac=\"\">\n\n            <router-view _v-1fd4faac=\"\"></router-view>\n\n        </div>\n        <div class=\"col-sm-3\" _v-1fd4faac=\"\">\n\n            <sidebar :user=\"user\" _v-1fd4faac=\"\"></sidebar>\n\n        </div>\n    </div>\n</div>\n\n<modal _v-1fd4faac=\"\"></modal>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\app.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/app.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache["/* line 2, stdin */\n.content[_v-4ea066ad] {\n  position: relative; }\n"] = false
+    require("vueify-insert-css").cache["/* line 2, stdin */\n.content[_v-1fd4faac] {\n  position: relative; }\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -27422,12 +27422,12 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\" _v-9c6828f2=\"\">\n    <div class=\"modal-dialog {{ size }}\" role=\"document\" _v-9c6828f2=\"\">\n        <div class=\"modal-content\" _v-9c6828f2=\"\">\n            {{{ content }}}\n        </div>\n    </div>\n</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\" _v-6b4f7cf7=\"\">\n    <div class=\"modal-dialog {{ size }}\" role=\"document\" _v-6b4f7cf7=\"\">\n        <div class=\"modal-content\" _v-6b4f7cf7=\"\">\n            {{{ content }}}\n        </div>\n    </div>\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\partials\\modal.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/partials/modal.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
@@ -27455,7 +27455,7 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\partials\\preloader.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/partials/preloader.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
@@ -27487,7 +27487,7 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\partials\\sidebar.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/partials/sidebar.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
@@ -27495,7 +27495,7 @@ if (module.hot) {(function () {  module.hot.accept()
   }
 })()}
 },{"./preloader.vue":36,"vue":31,"vue-hot-reload-api":5}],38:[function(require,module,exports){
-var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n#active-tcgs[_v-483f4524] {\n  position: relative; }\n")
+var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n#active-tcgs[_v-0b5051b4] {\n  position: relative; }\n")
 'use strict';
 
 var Preloader = require('./preloader.vue');
@@ -27525,14 +27525,14 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"active-tcgs\" _v-483f4524=\"\">\n    <table v-if=\"tcgs.length > 0\" class=\"table\" _v-483f4524=\"\">\n        <tbody _v-483f4524=\"\">\n            <tr v-for=\"tcg in tcgs\" _v-483f4524=\"\">\n                <td _v-483f4524=\"\">{{ tcg.name }}</td>\n            </tr>\n        </tbody>\n    </table>\n    <div v-else=\"\" _v-483f4524=\"\">\n        <em _v-483f4524=\"\">You aren't playing any TCGs! );</em>\n    </div>\n</div>\n<preloader _v-483f4524=\"\"></preloader>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"active-tcgs\" _v-0b5051b4=\"\">\n    <table v-if=\"tcgs.length > 0\" class=\"table\" _v-0b5051b4=\"\">\n        <tbody _v-0b5051b4=\"\">\n            <tr v-for=\"tcg in tcgs\" _v-0b5051b4=\"\">\n                <td _v-0b5051b4=\"\">{{ tcg.name }}</td>\n            </tr>\n        </tbody>\n    </table>\n    <div v-else=\"\" _v-0b5051b4=\"\">\n        <em _v-0b5051b4=\"\">You aren't playing any TCGs! );</em>\n    </div>\n</div>\n<preloader _v-0b5051b4=\"\"></preloader>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\partials\\user-tcgs-list.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/partials/user-tcgs-list.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache["/* line 2, stdin */\n#active-tcgs[_v-483f4524] {\n  position: relative; }\n"] = false
+    require("vueify-insert-css").cache["/* line 2, stdin */\n#active-tcgs[_v-0b5051b4] {\n  position: relative; }\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -27542,7 +27542,7 @@ if (module.hot) {(function () {  module.hot.accept()
   }
 })()}
 },{"./preloader.vue":36,"vue":31,"vue-hot-reload-api":5,"vueify-insert-css":32}],39:[function(require,module,exports){
-var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n#component[_v-1a0617b3] {\n  position: relative; }\n")
+var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n#component[_v-53b81686] {\n  position: relative; }\n")
 'use strict';
 
 module.exports = {
@@ -27562,14 +27562,14 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1 _v-1a0617b3=\"\">Collections</h1>\n\n<a class=\"btn btn-primary\" role=\"button\" href=\"/new-instance\" v-on:click.prevent=\"$parent.modal($event)\" _v-1a0617b3=\"\">Start a New Collection</a>\n\n<table v-if=\"collections.length > 0\" class=\"table\" _v-1a0617b3=\"\">\n    <tbody _v-1a0617b3=\"\">\n        <tr v-for=\"collection in collections\" _v-1a0617b3=\"\">\n            <td _v-1a0617b3=\"\">{{ collection.name }}</td>\n        </tr>\n    </tbody>\n</table>\n<div v-else=\"\" _v-1a0617b3=\"\">\n    <em _v-1a0617b3=\"\">Nothing to see here!</em>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1 _v-53b81686=\"\">Collections</h1>\n\n<a class=\"btn btn-primary\" role=\"button\" href=\"/new-instance\" v-on:click.prevent=\"$parent.modal($event)\" _v-53b81686=\"\">Start a New Collection</a>\n\n<table v-if=\"collections.length > 0\" class=\"table\" _v-53b81686=\"\">\n    <tbody _v-53b81686=\"\">\n        <tr v-for=\"collection in collections\" _v-53b81686=\"\">\n            <td _v-53b81686=\"\">{{ collection.name }}</td>\n        </tr>\n    </tbody>\n</table>\n<div v-else=\"\" _v-53b81686=\"\">\n    <em _v-53b81686=\"\">Nothing to see here!</em>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\collections.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/views/collections.vue"
   module.hot.dispose(function () {
-    require("vueify-insert-css").cache["/* line 2, stdin */\n#component[_v-1a0617b3] {\n  position: relative; }\n"] = false
+    require("vueify-insert-css").cache["/* line 2, stdin */\n#component[_v-53b81686] {\n  position: relative; }\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
@@ -27605,12 +27605,12 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1 _v-873de29c=\"\">Dashboard</h1>\n\n<div class=\"row\" _v-873de29c=\"\">\n    <div class=\"col-sm-4\" _v-873de29c=\"\">\n        <h2 _v-873de29c=\"\">Currently Playing</h2>\n        <tcgs _v-873de29c=\"\"></tcgs>\n    </div>\n    <div class=\"col-sm-4\" _v-873de29c=\"\">\n        <h2 _v-873de29c=\"\">Stash Updates</h2>\n        <stash-updates _v-873de29c=\"\"></stash-updates>\n    </div>\n    <div class=\"col-sm-4\" _v-873de29c=\"\">\n        <h2 _v-873de29c=\"\">Trade Finder</h2>\n        <trade-finder _v-873de29c=\"\"></trade-finder>\n    </div>\n</div>\n<div class=\"row\" _v-873de29c=\"\">\n    <div class=\"col-sm-8\" _v-873de29c=\"\">\n        <h2 _v-873de29c=\"\">Friend Activity</h2>\n        <feed-private _v-873de29c=\"\"></feed-private>\n    </div>\n    <div class=\"col-sm-4\" _v-873de29c=\"\">\n        <h2 _v-873de29c=\"\">Forum Topics</h2>\n        <forum-topics _v-873de29c=\"\"></forum-topics>\n    </div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1 _v-a8f2b388=\"\">Dashboard</h1>\n\n<div class=\"row\" _v-a8f2b388=\"\">\n    <div class=\"col-sm-4\" _v-a8f2b388=\"\">\n        <h2 _v-a8f2b388=\"\">Currently Playing</h2>\n        <tcgs _v-a8f2b388=\"\"></tcgs>\n    </div>\n    <div class=\"col-sm-4\" _v-a8f2b388=\"\">\n        <h2 _v-a8f2b388=\"\">Stash Updates</h2>\n        <stash-updates _v-a8f2b388=\"\"></stash-updates>\n    </div>\n    <div class=\"col-sm-4\" _v-a8f2b388=\"\">\n        <h2 _v-a8f2b388=\"\">Trade Finder</h2>\n        <trade-finder _v-a8f2b388=\"\"></trade-finder>\n    </div>\n</div>\n<div class=\"row\" _v-a8f2b388=\"\">\n    <div class=\"col-sm-8\" _v-a8f2b388=\"\">\n        <h2 _v-a8f2b388=\"\">Friend Activity</h2>\n        <feed-private _v-a8f2b388=\"\"></feed-private>\n    </div>\n    <div class=\"col-sm-4\" _v-a8f2b388=\"\">\n        <h2 _v-a8f2b388=\"\">Forum Topics</h2>\n        <forum-topics _v-a8f2b388=\"\"></forum-topics>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\dashboard.vue"
+  var id = "/home/vagrant/legendaries/resources/assets/js/views/dashboard.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
