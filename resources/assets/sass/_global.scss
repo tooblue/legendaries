@@ -1,0 +1,52 @@
+#main {
+    position: relative;
+    margin-top: -90px;
+    h1:first-child {
+        color: #fff;
+        font-weight: 300;
+        margin-bottom: 40px;
+        margin-top: 15px;
+    }
+}
+
+.btn-primary {
+    border: 2px solid;
+    &:hover, &:active {
+        color: #fff;
+        background-color: $btn-primary-color;
+    }
+    &.inverse {
+        color: #fff;
+        border-color: #fff;
+        &:hover, &:active, &:focus {
+            color: $btn-primary-color;
+            background-color: #fff;
+        }
+    }
+}
+
+.navbar-static-top {
+    z-index: 0;
+}
+
+.modal {
+    .modal-header {
+        background-color: $stash-primary;
+        color: #fff;
+        text-transform: uppercase;
+        .modal-title {
+            font-weight: 300;
+            font-size: 16px;
+        }
+        .close {
+            color: #fff;
+            text-shadow: none;
+            opacity: 1;
+            filter: none;
+        }
+    }
+    .modal-content {
+        border-radius: 0px;
+        border: 3px solid $stash-primary;
+    }
+}

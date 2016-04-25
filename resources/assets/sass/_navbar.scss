@@ -1,0 +1,80 @@
+#navbar-top {
+    min-height: 150px;
+    .navbar-brand {
+        text-transform: uppercase;
+        background-image: url(/img/stash-w.svg);
+        background-repeat: no-repeat;
+        background-size: auto 20px;
+        background-position: 15px 15px;
+        padding-left: 50px;
+        span {
+            font-size: 8pt;
+            text-transform: none;
+            color: rgba(255,255,255,.5);
+            letter-spacing: 1px;
+        }
+    }
+    form[role=search] {
+        position: relative;
+        .form-control:focus {
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0px 2px #fff;
+        }
+        input {
+            color: #fff;
+            background-color: rgba(0,0,0,.15);
+            border: none;
+            border-radius: 3px;
+            &::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+                color: rgba(255,255,255,.5);
+            }
+            &:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+               color: rgba(255,255,255,.5);
+            }
+            &::-moz-placeholder { /* Mozilla Firefox 19+ */
+               color: rgba(255,255,255,.5);
+            }
+            &:-ms-input-placeholder { /* Internet Explorer 10-11 */
+               color: rgba(255,255,255,.5);
+            }
+        }
+        &:after {
+            color: rgba(255,255,255,.5);
+            font-family: FontAwesome;
+            content: "\f002";
+            padding: 6px 14px;
+            position: absolute;
+            right: 10px;
+            top: 1px;
+            z-index: 100;
+            pointer-events: none;
+        }
+    }
+    .navbar-nav {
+        li > a {
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            &:not(.btn) {
+                color: #fff;
+                padding: 15px 0px 10px 0px;
+                margin: 0px 15px 5px 15px;
+                border-bottom: 2px solid transparent;
+                &:hover, &:active {
+                    border-bottom: 2px solid #fff;
+                }
+            }
+            &.btn {
+                padding: 5px 10px;
+                margin-left: 15px;
+                &:hover, &:active, &:focus {
+                    @extend .btn-primary.inverse:hover;
+                }
+            }
+        }
+        li.login {
+            margin-left: 10px;
+            padding-left: 10px;
+            border-left: 1px solid rgba(255, 255, 255, .15);
+        }
+    }
+}

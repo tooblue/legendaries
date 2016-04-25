@@ -1,0 +1,45 @@
+#navbar-top {
+    margin: 0px;
+    border: none;
+}
+
+#cover {
+    color: #fff;
+    background-color: $navbar-default-bg;
+    padding: 0 0 150px 0;
+    margin-bottom: 50px;
+    h1 {
+        color: #fff;
+        font-weight: 300;
+        margin-bottom: 75px;
+        margin-top: 15px;
+    }
+    em {
+        font-style: normal;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #fff;
+    }
+    p {
+        letter-spacing: 1px;
+    }
+}
+
+#main {
+    margin-top: 0px;
+    .buckets {
+        .row {
+            margin-bottom: 75px;
+        }
+        .col-xs-3 {
+            text-align: center;
+        }
+        i {
+            font-size: 75pt;
+            color: #ddd;
+            margin: 30px 0 0 0;
+        }
+    }
+    h2 {
+        color: $stash-primary;
+    }
+}

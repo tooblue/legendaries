@@ -1,0 +1,13 @@
+@import "node_modules/nprogress/nprogress";
+#nprogress {
+    .bar {
+        background: lighten($stash-primary, 20%);
+    }
+    .peg {
+        box-shadow: 0 0 10px #fff, 0 0 5px #fff;
+    }
+    .spinner-icon {
+        border-top-color: #fff;
+        border-left-color: #fff;
+    }
+}
