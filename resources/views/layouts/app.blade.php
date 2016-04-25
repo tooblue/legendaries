@@ -43,7 +43,7 @@
                         <li><a href="#">TCGs</a></li>
                         <li><a href="#">Players</a></li>
                         <li><a href="https://forum.filler00.com" target="_blank">Forum</a></li>
-                        <li><a href="{{ route('app::logout') }}">Logout &nbsp; <i class="fa fa-power-off"></i></a></li>
+                        <li><a href="{{ route('app::login') }}">Login &nbsp; <i class="fa fa-power-off"></i></a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->

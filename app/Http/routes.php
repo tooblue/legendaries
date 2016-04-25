@@ -3,17 +3,8 @@
 // Legendaries app
 Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'app::'], function () {
 
-    // Authentication Routes...
-    Route::get('login', 'Auth\AuthController@showLoginForm')->name('login');
-    Route::post('login', 'Auth\AuthController@login');
-    Route::get('logout', 'Auth\AuthController@logout')->name('logout');
-    // Registration Routes...
-    Route::get('register', 'Auth\AuthController@showRegistrationForm');
-    Route::post('register', 'Auth\AuthController@register');
-    // Password Reset Routes...
-    Route::get('password/reset/{token?}', 'Auth\PasswordController@showResetForm');
-    Route::post('password/email', 'Auth\PasswordController@sendResetLinkEmail');
-    Route::post('password/reset', 'Auth\PasswordController@reset');
+    Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
+    Route::get('login/callback', 'Auth\AuthController@handleProviderCallback');
 
     Route::get('/', ['as' => 'dashboard', function () {
         return view('app');
