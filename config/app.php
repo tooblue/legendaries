@@ -160,7 +160,7 @@ return [
          * Other Service Providers
          */
         //Laravel\Socialite\SocialiteServiceProvider::class,
-        \SocialiteProviders\Manager\ServiceProvider::class,
+        SocialiteProviders\Manager\ServiceProvider::class,
         SocialiteProviders\Generators\GeneratorsServiceProvider::class,
 
     ],

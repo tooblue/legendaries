@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialiteProviders\Discord;
+namespace App\Providers\Discord;
 
 use Laravel\Socialite\Two\ProviderInterface;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
@@ -16,14 +16,16 @@ class Provider extends AbstractProvider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
-    protected $scopes = [''];
+    protected $scopes = ['identify', 'guilds'];
+
+    protected $scopeSeparator = ' ';
 
     /**
      * {@inheritdoc}
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('', $state);
+        return $this->buildAuthUrlFromBase('https://discordapp.com/api/oauth2/authorize', $state);
     }
 
     /**
@@ -31,7 +33,7 @@ class Provider extends AbstractProvider implements ProviderInterface
      */
     protected function getTokenUrl()
     {
-        return '';
+        return 'https://discordapp.com/api/oauth2/token';
     }
 
     /**

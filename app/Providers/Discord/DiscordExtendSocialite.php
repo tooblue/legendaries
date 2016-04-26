@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialiteProviders\Discord;
+namespace App\Providers\Discord;
 
 use SocialiteProviders\Manager\SocialiteWasCalled;
 

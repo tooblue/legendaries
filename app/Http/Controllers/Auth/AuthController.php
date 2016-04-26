@@ -15,7 +15,6 @@ class AuthController extends Controller
     public function redirectToProvider()
     {
         return Socialite::with('discord')
-            //->scopes(['scope1', 'scope2'])
             ->redirect();
     }
 
