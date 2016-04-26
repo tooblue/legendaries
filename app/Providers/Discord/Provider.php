@@ -16,7 +16,7 @@ class Provider extends AbstractProvider implements ProviderInterface
     /**
      * {@inheritdoc}
      */
-    protected $scopes = ['identify', 'guilds'];
+    protected $scopes = ['identify', 'guilds', 'bot'];
 
     protected $scopeSeparator = ' ';
 
@@ -25,7 +25,7 @@ class Provider extends AbstractProvider implements ProviderInterface
      */
     protected function getAuthUrl($state)
     {
-        return $this->buildAuthUrlFromBase('https://discordapp.com/api/oauth2/authorize', $state);
+        return $this->buildAuthUrlFromBase('https://discordapp.com/oauth2/authorize', $state);
     }
 
     /**
@@ -71,6 +71,26 @@ class Provider extends AbstractProvider implements ProviderInterface
     {
         return array_merge(parent::getTokenFields($code), [
             'grant_type' => 'authorization_code'
+        ]);
+    }
+
+    /**
+     * Get the code from the request.
+     *
+     * @return string
+     */
+    public function getCode()
+    {
+        return $this->request->input('code');
+    }
+
+    public function api($token)
+    {
+        return new \GuzzleHttp\Client([
+            'base_uri' => 'https://discordapp.com/api/',
+            'headers' => [
+                'Authorization' => 'Bearer '.$token,
+            ]
         ]);
     }
 }
