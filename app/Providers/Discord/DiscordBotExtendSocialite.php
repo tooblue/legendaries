@@ -4,13 +4,13 @@ namespace App\Providers\Discord;
 
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
-class DiscordExtendSocialite
+class DiscordBotExtendSocialite
 {
     /**
      * Execute the provider.
      */
     public function handle(SocialiteWasCalled $socialiteWasCalled)
     {
-        $socialiteWasCalled->extendSocialite('discord', __NAMESPACE__.'\DiscordProvider');
+        $socialiteWasCalled->extendSocialite('discordbot', __NAMESPACE__.'\DiscordBotProvider');
     }
 }

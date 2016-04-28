@@ -6,6 +6,10 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'a
     Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
     Route::get('login/callback', 'Auth\AuthController@handleProviderCallback');
 
+    // used for adding a bot to the server
+    //Route::get('login/bot', 'Auth\BotAuthController@redirectToProvider');
+    //Route::get('login/bot/callback', 'Auth\BotAuthController@handleProviderCallback');
+
     Route::get('/', ['as' => 'dashboard', function () {
         return view('app');
     }]);

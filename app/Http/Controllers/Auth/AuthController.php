@@ -24,7 +24,7 @@ class AuthController extends Controller
     public function redirectToProvider()
     {
         return Socialite::with('discord')
-            ->with(['scope' => 'bot', 'permissions' => '0x0020808'])
+            ->with(['scope' => 'identify guilds'])
             ->redirect();
     }
 
@@ -35,26 +35,6 @@ class AuthController extends Controller
      */
     public function handleProviderCallback(Request $request)
     {
-
-        $discord = new Discord('MTc0NjE0MTQ5Mjk5NTY4NjQw.CgFmsQ.lLD3xkeQXYgZ9gBQiS231bFDCoc');
-        $ws = new WebSocket($discord);
-
-        $ws->on('ready', function ($discord) use ($ws) {
-            // Here we will find the guild.
-            $guild = $discord->guilds->first();
-            // And now the user to change.
-            $member = $guild->members->first();
-            // And the role to remove.
-            $role = $member->roles->first();
-
-            echo "{$member->username} has {$role->name}.";
-        });
-        // Now we will run the ReactPHP Event Loop!
-        $ws->run();
-
-
-        die();
-
 
         $discord = Socialite::with('discord');
         $code = $discord->getCode();
