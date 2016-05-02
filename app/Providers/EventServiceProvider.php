@@ -15,7 +15,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         \SocialiteProviders\Manager\SocialiteWasCalled::class => [
             'App\Providers\Discord\DiscordExtendSocialite@handle',
-            'App\Providers\Discord\DiscordBotExtendSocialite@handle',
         ],
     ];
 

@@ -11,11 +11,9 @@
             </a>
         </div>
         <div class="list-group">
-            <a v-link="{name: 'dashboard'}" class="list-group-item">Dashboard <i class="fa fa-tachometer pull-right"></i></a>
-            <a v-link="{name: 'inbox'}" class="list-group-item">Inbox <span class="badge">14</span></a>
-            <a v-link="{name: 'collections'}" class="list-group-item">Collections <i class="fa fa-th-large pull-right"></i></a>
-            <a v-link="{name: 'friends'}" class="list-group-item">Friends <i class="fa fa-heart pull-right"></i></a>
-            <a v-link="{name: 'settings'}" class="list-group-item">Settings <i class="fa fa-cog pull-right"></i></a>
+            <a v-link="{name: 'dashboard'}" class="list-group-item">My Heroes <i class="fa fa-users pull-right"></i></a>
+            <a v-link="{name: 'dashboard'}" class="list-group-item">My Items <i class="fa fa-flag pull-right"></i></a>
+            <a v-link="{name: 'collections'}" class="list-group-item">Damage Calculator <i class="fa fa-calculator pull-right"></i></a>
         </div>
         <preloader></preloader>
     </div>

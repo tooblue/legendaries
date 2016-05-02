@@ -3,32 +3,9 @@
 </style>
 
 <template>
-    <h1>Dashboard</h1>
+    <h1>My Heroes</h1>
 
-    <div class="row">
-        <div class="col-sm-4">
-            <h2>Currently Playing</h2>
-            <tcgs></tcgs>
-        </div>
-        <div class="col-sm-4">
-            <h2>Stash Updates</h2>
-            <stash-updates></stash-updates>
-        </div>
-        <div class="col-sm-4">
-            <h2>Trade Finder</h2>
-            <trade-finder></trade-finder>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-8">
-            <h2>Friend Activity</h2>
-            <feed-private></feed-private>
-        </div>
-        <div class="col-sm-4">
-            <h2>Forum Topics</h2>
-            <forum-topics></forum-topics>
-        </div>
-    </div>
+    <p><em>You haven't saved any heroes! ):</em></p>
 </template>
 
 <script>

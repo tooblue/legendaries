@@ -11,7 +11,7 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'a
     //Route::get('login/bot/callback', 'Auth\BotAuthController@handleProviderCallback');
 
     Route::get('/', ['as' => 'dashboard', function () {
-        return view('app');
+        return view('splash');
     }]);
 
     // Modal routes
