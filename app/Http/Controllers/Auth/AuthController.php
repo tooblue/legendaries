@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use Discord\Discord;
-use Discord\WebSockets\WebSocket;
-
 use Auth;
 use Socialite;
 
@@ -24,7 +21,7 @@ class AuthController extends Controller
     public function redirectToProvider()
     {
         return Socialite::with('discord')
-            ->with(['scope' => 'identify guilds'])
+            ->with(['scope' => 'identify'])
             ->redirect();
     }
 

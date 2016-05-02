@@ -42,9 +42,7 @@ return [
     ],
 
     'discordbot' => [
-        'client_id' => env('DISCORD_BOT_ID'),
-        'client_secret' => env('DISCORD_BOT_TOKEN'),
-        'redirect' => env('DISCORD_BOT_REDIRECT_URI'),
+        'token' => env('DISCORD_BOT_TOKEN'),
     ],
 
 ];

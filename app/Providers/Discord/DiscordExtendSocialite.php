@@ -11,6 +11,6 @@ class DiscordExtendSocialite
      */
     public function handle(SocialiteWasCalled $socialiteWasCalled)
     {
-        $socialiteWasCalled->extendSocialite('discord', __NAMESPACE__.'\DiscordProvider');
+        $socialiteWasCalled->extendSocialite('discord', __NAMESPACE__.'\Provider');
     }
 }

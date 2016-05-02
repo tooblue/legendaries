@@ -9,7 +9,6 @@
         "laravel/framework": "5.2.*",
         "laravel/socialite": "^2.0",
         "socialiteproviders/manager": "^2.1",
-        "team-reflex/discord-php": "^3.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
