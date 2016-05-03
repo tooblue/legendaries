@@ -1,8 +1,8 @@
 #main {
     h2 {
-        color: $stash-primary;
+        color: $primary-color;
         font-size: 18px;
-        border-bottom: 2px solid lighten($stash-primary, 33%);
+        border-bottom: 2px solid lighten($primary-color, 33%);
         padding-bottom: 12px;
     }
 }

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Legendaries</title>
+    <title>Legendaries.net | Wonder Tactics Stuff &amp; Things</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/splash.css">
@@ -18,12 +18,49 @@
 
 <body>
 
-    <div class="container"
-        <span class="logo fa-stack fa-lg">
-            <i class="fa fa-circle-o fa-stack-2x"></i>
-            <i class="fa fa-star-o fa-stack-1x"></i>
-        </span>
-        Legendaries.net
+    <div class="site-wrapper">
+
+        <div class="site-wrapper-inner">
+
+            <div class="cover-container">
+
+                <div class="masthead clearfix">
+                    <div class="inner">
+                        <h3 class="masthead-brand">
+                            Legendaries.net
+                        </h3>
+                        <nav>
+                            <ul class="nav masthead-nav">
+                                <li><a href="https://guide.legendaries.net">Game Guides</a></li>
+                                <li><a href="https://discordapp.com/channels/172354488613470208/172354488613470208">Guild Chat</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="inner cover">
+                    <h1 class="cover-heading">
+                        We are <strong>Legendary</strong>,
+                    </h1>
+                    <p class="lead">
+                        a <strong>Wonder Tactics</strong> guild.
+                    </p>
+                    <p class="lead">
+                        <button disabled class="btn btn-default"><i class="fa fa-user"></i> &nbsp; Member Portal Coming Soon</button>
+                        <!--a href="{{ route('app::login') }}" class="btn btn-default"><i class="fa fa-user"></i> &nbsp; Member Login</a-->
+                    </p>
+                </div>
+
+                <div class="mastfoot">
+                    <div class="inner">
+                        <p>Interested in joining us? Sign up for <a href="https://discordapp.com">Discord</a> and send a DM to <strong>Horo#7921</strong>.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
     <script src="/js/splash.js"></script>

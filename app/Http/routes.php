@@ -6,20 +6,16 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'a
     Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
     Route::get('login/callback', 'Auth\AuthController@handleProviderCallback');
 
-    // used for adding a bot to the server
-    //Route::get('login/bot', 'Auth\BotAuthController@redirectToProvider');
-    //Route::get('login/bot/callback', 'Auth\BotAuthController@handleProviderCallback');
-
-    Route::get('/', ['as' => 'dashboard', function () {
+    Route::get('/', ['as' => 'splash', function () {
         return view('splash');
     }]);
 
     // Modal routes
-    Route::get('/modal/{view}', 'ModalController@show')->name('modal');
+    //Route::get('/modal/{view}', 'ModalController@show')->name('modal');
 });
 
 // Legendaries API
-Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
+/*Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
     Route::group(['middleware' => ['api.app'], 'as' => 'app::'], function () {
         Route::get('/user', 'UserController@index');
         Route::get('/user/instances', 'UserController@instances');
@@ -33,4 +29,4 @@ Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespac
         });
         Route::resource('users', 'UserController');
     });
-});
+});*/

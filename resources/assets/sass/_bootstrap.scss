@@ -1,14 +1,23 @@
+/**
+ * Fonts
+**/
 @import url(https://fonts.googleapis.com/css?family=Lato);
-
-$stash-primary: #9564CF;
 $font-family-sans-serif: 'Lato', sans-serif;
+
+/**
+ * Colors
+**/
+$primary-color: #47C7CF;
+
 $navbar-default-color: #fff;
 $navbar-default-link-color: #fff;
-$navbar-default-bg: $stash-primary;
-$border-radius-base: 0px;
-$brand-primary: darken($stash-primary, 6.5%);
+$navbar-default-bg: $primary-color;
+$brand-primary: darken($primary-color, 6.5%);
 $btn-primary-bg: transparent;
 $btn-primary-color: $brand-primary;
 $btn-primary-border: $btn-primary-color;
 
-@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+/**
+ * Components
+**/
+$border-radius-base: 0px;
