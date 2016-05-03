@@ -162,7 +162,7 @@ return [
          */
         //Laravel\Socialite\SocialiteServiceProvider::class,
         SocialiteProviders\Manager\ServiceProvider::class,
-        SocialiteProviders\Generators\GeneratorsServiceProvider::class,
+        //SocialiteProviders\Generators\GeneratorsServiceProvider::class,
 
     ],
 
