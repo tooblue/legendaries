@@ -6,6 +6,9 @@ hostname: legendaries.dev
 name: legendaries
 provider: virtualbox
 
+keys:
+    - ~/.ssh/id_rsa
+
 folders:
     - map: .
       to: "/home/vagrant/legendaries"
