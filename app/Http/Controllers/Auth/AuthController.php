@@ -54,7 +54,7 @@ class AuthController extends Controller
 
         // check if user is a valid guild member
         if (Auth::attempt(['discord_id' => $user->id])) {
-            return redirect()->intended('dashboard');
+            return redirect()->intended('app::dashboard');
         }
         else {
             return redirect('/');

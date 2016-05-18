@@ -48,7 +48,7 @@
                         <li><a href="/about">About</a></li>
                         <li><a href="https://guide.legendaries.net">Guides</a></li>
                         @if (!Auth::check())
-                            <li class="login"><a href="{{ route('app::login') }}"><i class="fa fa-sign-in"></i> &nbsp; Guild Members Login</a></li>
+                            <li class="login"><a href="{{ route('login') }}"><i class="fa fa-sign-in"></i> &nbsp; Guild Members Login</a></li>
                         @else
                             <!--li class="login"><a href="#">Members</a></li>
                             <li><a href="#">Heroes</a></li>

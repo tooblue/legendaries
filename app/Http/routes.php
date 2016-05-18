@@ -1,7 +1,7 @@
 <?php
 
-// Legendaries app
-Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'app::'], function () {
+// Legendaries portal page & auth
+Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN')], function () {
 
     Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
     Route::get('login/callback', 'Auth\AuthController@handleProviderCallback');
@@ -9,13 +9,21 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'a
     Route::get('/', ['as' => 'splash', function () {
         return view('splash');
     }]);
+});
+
+// Legendaries app
+Route::group(['middleware' => ['web'], 'domain' => 'app.' . env('APP_DOMAIN'), 'as' => 'app::'], function () {
+
+    Route::get('/', ['as' => 'dashboard', function () {
+        return view('app');
+    }]);
 
     // Modal routes
     //Route::get('/modal/{view}', 'ModalController@show')->name('modal');
 });
 
 // Legendaries API
-/*Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
+Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
     Route::group(['middleware' => ['api.app'], 'as' => 'app::'], function () {
         Route::get('/user', 'UserController@index');
         Route::get('/user/instances', 'UserController@instances');
@@ -29,4 +37,4 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN'), 'as' => 'a
         });
         Route::resource('users', 'UserController');
     });
-});*/
+});

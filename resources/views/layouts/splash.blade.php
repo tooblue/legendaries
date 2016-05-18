@@ -56,8 +56,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         a <strong>Wonder Tactics</strong> guild.
                     </p>
                     <p class="lead">
-                        <button disabled class="btn btn-default"><i class="fa fa-user"></i> &nbsp; Member Portal Coming Soon</button>
-                        <!--a href="{{ route('app::login') }}" class="btn btn-default"><i class="fa fa-user"></i> &nbsp; Member Login</a-->
+                        @yield('portal')
                     </p>
                 </div>
 
