@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\User;
+use App\Guild;
+
 use Auth;
 use Socialite;
 
@@ -12,6 +15,14 @@ class AuthController extends Controller
 {
 
     protected $redirectTo = '/';
+    protected $guild;
+    protected $discord;
+
+    public function __construct(Guild $guild)
+    {
+        $this->guild = $guild;
+        $this->discord = Socialite::with('discord');
+    }
 
     /**
      * Redirect the user to the Discord authentication page.
@@ -20,7 +31,7 @@ class AuthController extends Controller
      */
     public function redirectToProvider()
     {
-        return Socialite::with('discord')
+        return $this->discord
             ->with(['scope' => 'identify'])
             ->redirect();
     }
@@ -32,32 +43,32 @@ class AuthController extends Controller
      */
     public function handleProviderCallback(Request $request)
     {
-
-        $discord = Socialite::with('discord');
-        $code = $discord->getCode();
-
-        // if an auth token does not exist, fetch and save it to the session
-        if ( !$request->session()->has('discord_token') )
-            $request->session()->put('discord_token', $discord->getAccessToken($code));
-
-        // get the Discord user guild object
-        $user = $discord->api($request->session()->get('discord_token'))
-            ->get('users/@me/guilds')
-            ->getBody();
+        $token = $this->discord->getAccessToken($this->discord->getCode());
 
         // get the Discord user object
-        $user = $discord->api($request->session()->get('discord_token'))
+        $discordUser = $this->discord->api($token)
             ->get('users/@me')
             ->getBody();
+        $discordUser = json_decode($discordUser);
 
-        $user = json_decode($user);
-
-        // check if user is a valid guild member
-        if (Auth::attempt(['discord_id' => $user->id])) {
-            return redirect()->intended('app::dashboard');
+        if ( $this->guild->member($discordUser->id) ) {
+            $user = User::firstOrCreate(['discord_id' => $discordUser->id]); // create the user if they dont exist
+            Auth::login($user);
+            return redirect()->intended(route('app::dashboard'));
         }
         else {
-            return redirect('/');
+            return redirect(route('splash'));
         }
+    }
+
+    /**
+     * Destroy the authenticated user session
+     *
+     * @return Response
+     */
+    public function logout()
+    {
+        Auth::logout();
+        return redirect(route('splash'));
     }
 }

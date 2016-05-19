@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Providers;
+namespace App\Providers\DiscordBot;
 
 use Illuminate\Support\ServiceProvider;
 
-use GuzzleHttp\Client as Guzzle;
+use \App\Providers\DiscordBot\Client as DiscordBot;
 
-class DiscordBot extends ServiceProvider
+class Provider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
@@ -25,10 +25,10 @@ class DiscordBot extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(Guzzle::class, function ($app) {
-            return new Guzzle([
+        $this->app->singleton('\App\Providers\DiscordBot\Client', function ($app) {
+            return new DiscordBot([
                 'base_uri' => 'https://discordapp.com/api/',
-                'query' => ['token' => config('discordbot.token')]
+                'query' => ['token' => config('services.discordbot.token')]
             ]);
         });
     }

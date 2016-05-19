@@ -155,7 +155,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\DiscordBot::class,
+        App\Providers\DiscordBot\Provider::class,
 
         /*
          * Other Service Providers

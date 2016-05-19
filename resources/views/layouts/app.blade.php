@@ -14,6 +14,10 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+    <script>
+        var session = {!! json_encode($session) !!}
+    </script>
 </head>
 
 <body>
@@ -45,17 +49,12 @@
                         </div>
                     </form-->
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="/about">About</a></li>
                         <li><a href="https://guide.legendaries.net">Guides</a></li>
-                        @if (!Auth::check())
-                            <li class="login"><a href="{{ route('login') }}"><i class="fa fa-sign-in"></i> &nbsp; Guild Members Login</a></li>
-                        @else
-                            <!--li class="login"><a href="#">Members</a></li>
-                            <li><a href="#">Heroes</a></li>
-                            <li><a href="#">Items</a></li-->
-                            <li class="login"><a href="https://discordapp.com/channels/172354488613470208/172354488613470208">Chat</a></li>
-                            <li class="login"><a href="#"><i class="fa fa-power-off"></i> &nbsp; Logout</a></li>
-                        @endif
+                        <!--li class="login"><a href="#">Members</a></li>
+                        <li><a href="#">Heroes</a></li>
+                        <li><a href="#">Items</a></li-->
+                        <li><a href="https://discordapp.com/channels/172354488613470208/172354488613470208">Chat</a></li>
+                        <li class="login"><a href="{{ route('logout') }}"><i class="fa fa-power-off"></i> &nbsp; Logout</a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->

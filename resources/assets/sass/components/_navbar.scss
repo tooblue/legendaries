@@ -1,7 +1,7 @@
 #navbar-top {
     min-height: 150px;
     .navbar-brand {
-        text-transform: uppercase;
+        color: #FFC800;
         background-image: url(/img/stash-w.svg);
         background-repeat: no-repeat;
         background-size: auto 20px;
@@ -64,7 +64,7 @@
                 margin: 0px 15px 5px 15px;
                 border-bottom: 2px solid transparent;
                 &:hover, &:active {
-                    border-bottom: 2px solid #fff;
+                    border-bottom: 2px solid #FFC800;
                 }
             }
             &.btn {

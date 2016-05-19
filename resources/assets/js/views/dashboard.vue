@@ -1,7 +1,3 @@
-<style lang="scss" scoped>
-
-</style>
-
 <template>
     <h1>My Heroes</h1>
 
@@ -9,16 +5,11 @@
 </template>
 
 <script>
-    var Tcgs = require('../partials/user-tcgs-list.vue');
-
     module.exports = {
         data : function() {
             return {
-                msg: ""
+                session: session,
             }
-        },
-        components: {
-            tcgs: Tcgs
         },
         created: function() {
             this.get();

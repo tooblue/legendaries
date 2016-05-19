@@ -18,7 +18,7 @@ Vue.use(require('vue-resource'));
 */
 var App = require('./app.vue'); // base view
 var Dashboard = require('./views/dashboard.vue');
-var Collections = require('./views/collections.vue');
+var Calculator = require('./views/calculator.vue');
 
 /*
     Vue routes
@@ -30,26 +30,10 @@ router.map({
         name: 'dashboard',
         component: Dashboard
     },
-    '/inbox': {
-        name: 'inbox',
-        component: {}
-    },
-    '/collections': {
-        name: 'collections',
-        component: Collections
-    },
-    '/collection/:id': {
-        name: 'collection',
-        component: {}
-    },
-    '/friends': {
-        name: 'friends',
-        component: {}
-    },
-    '/settings': {
-        name: 'settings',
-        component: {}
-    },
+    '/calc': {
+        name: 'calculator',
+        component: Calculator
+    }
 });
 
 router.start(App, '#vue')

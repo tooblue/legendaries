@@ -2,18 +2,17 @@
     <div id="sidebar">
         <div class="list-group">
             <a href="#" class="list-group-item user clearfix">
-                <img class="gh-avatar pull-left" src="http://www.gravatar.com/avatar/cea457c1532392c1b3c4e073b1739dc1?d=identicon&amp;f=y" alt="">
+                <img class="gh-avatar pull-left" v-bind:src="session.userAvatar" alt="{{ session.user.discord.user.username }}">
                 <div class="stats pull-right">
-                    <p class="usr">{{ user.name }}</span></p>
-                    <p class="bookmark"><em>{{ user.group.name }}</em></span></p>
+                    <p class="usr">{{ session.user.discord.user.username }}</span></p>
+                    <p class="bookmark" v-for="role in session.roles | filterBy session.user.discord.roles[0] in 'id'">{{ role.name }}</p>
                     <p class="comment"><strong>3000</strong> posts</p>
                 </div>
             </a>
         </div>
         <div class="list-group">
             <a v-link="{name: 'dashboard'}" class="list-group-item">My Heroes <i class="fa fa-users pull-right"></i></a>
-            <a v-link="{name: 'dashboard'}" class="list-group-item">My Items <i class="fa fa-flag pull-right"></i></a>
-            <a v-link="{name: 'collections'}" class="list-group-item">Damage Calculator <i class="fa fa-calculator pull-right"></i></a>
+            <a v-link="{name: 'calculator'}" class="list-group-item">Damage Calculator <i class="fa fa-calculator pull-right"></i></a>
         </div>
         <preloader></preloader>
     </div>
@@ -25,7 +24,7 @@
     module.exports = {
         data : function() {
             return {
-                msg: "hello from sidebar! :D"
+                session: session,
             }
         },
         props: ['user'],

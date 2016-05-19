@@ -32,7 +32,7 @@
     module.exports = {
         data: function() {
             return {
-                user: {},
+                session: session,
                 progress: nprogress.configure({ parent: '#app' })
             }
         },

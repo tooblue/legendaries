@@ -5,36 +5,28 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN')], function 
 
     Route::get('login', 'Auth\AuthController@redirectToProvider')->name('login');
     Route::get('login/callback', 'Auth\AuthController@handleProviderCallback');
+    Route::get('logout', 'Auth\AuthController@logout')->name('logout');
 
     Route::get('/', ['as' => 'splash', function () {
+        //var_dump(Auth::check()); die();
         return view('splash');
     }]);
 });
 
 // Legendaries app
-Route::group(['middleware' => ['web'], 'domain' => 'app.' . env('APP_DOMAIN'), 'as' => 'app::'], function () {
+Route::group(['middleware' => ['web','auth'], 'domain' => 'app.' . env('APP_DOMAIN'), 'as' => 'app::'], function () {
 
-    Route::get('/', ['as' => 'dashboard', function () {
-        return view('app');
-    }]);
+    Route::get('/', 'DashboardController@index')->name('dashboard');
 
     // Modal routes
     //Route::get('/modal/{view}', 'ModalController@show')->name('modal');
 });
 
 // Legendaries API
-Route::group(['domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
-    Route::group(['middleware' => ['api.app'], 'as' => 'app::'], function () {
-        Route::get('/user', 'UserController@index');
-        Route::get('/user/instances', 'UserController@instances');
-        Route::post('/user/instance', 'UserController@newInstance')->name('newInstance');
-        Route::get('/user/collections', 'UserController@collections');
-    });
+Route::group(['middleware' => ['web','auth','api'], 'domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
 
-    Route::group(['middleware' => ['api']], function () {
-        Route::get('/', function () {
-            echo 'Hello, world.';
-        });
-        Route::resource('users', 'UserController');
-    });
+    Route::get('guild/members/{id}', 'GuildController@member');
+    Route::get('guild/members', 'GuildController@members');
+    Route::resource('guild', 'GuildController', ['only' => ['index']]);
+
 });

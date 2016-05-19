@@ -1,4 +1,5 @@
-@import 'bootstrap';
+@import 'config';
 @import 'node_modules/bootstrap-sass/assets/stylesheets/bootstrap';
 @import 'global';
-@import 'splashpg';
+
+@import 'layouts/splash';

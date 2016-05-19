@@ -6,7 +6,7 @@
         border-radius: 4px;
         background-color: #fff;
          a.list-group-item {
-            color: #7242AB;
+            color: #666;
             font-size: 8pt;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -26,19 +26,19 @@
                 color: #fff;
             }
             i {
-                color: #9564CF;
+                color: #000;
                 position: relative;
                 top: 3px;
             }
             &:hover, &:active {
                 color: #fff;
-                background-color: #7242AB;
+                background-color: #666;
                 .badge {
                     background-color: #fff;
-                    color: #9564CF;
+                    color: #FFC800;
                 }
                 i {
-                    color: #fff;
+                    color: #FFC800;
                 }
             }
             &.user {
@@ -47,7 +47,7 @@
                 border: none;
                 border-radius: 5px;
                 &:hover, &:active {
-                    color: #7242AB;
+                    color: #666;
                     background-color: #fff;
                 }
                 .gh-avatar {
@@ -62,7 +62,7 @@
                         margin: 0px 0px 7px 0px;
                         position: relative;
                         &:after {
-                            color: #9564CF;
+                            color: #000;
                             font-family: FontAwesome;
                             position: absolute;
                             right: 0px;

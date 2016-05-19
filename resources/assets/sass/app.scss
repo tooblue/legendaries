@@ -1,12 +1,12 @@
-@import 'bootstrap';
+@import 'config';
 @import 'node_modules/bootstrap-sass/assets/stylesheets/bootstrap';
 @import 'global';
 
 /* Components */
-@import 'nprogress';
-@import 'preloader';
-@import 'navbar';
-@import 'sidebar';
+@import 'components/nprogress';
+@import 'components/preloader';
+@import 'components/navbar';
+@import 'components/sidebar';
 
 /* Layout */
-@import 'application';
+@import 'layouts/app';
