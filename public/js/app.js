@@ -27317,18 +27317,6 @@ module.exports = {
         sidebar: Sidebar,
         modal: Modal
     },
-    created: function created() {
-        this.progress.start();
-    },
-    ready: function ready() {
-        // load authenticated user's data
-        this.$resource('//api.stash.dev/user', {}, {}, { xhr: { withCredentials: true } }).get().then(function (response) {
-            this.$set('user', response.data);
-            this.progress.done();
-        }, function (response) {
-            console.log('error: ', response);
-        });
-    },
     methods: {
         modal: function modal(event, size) {
             this.$broadcast('modal-open', { event: event, size: size });
@@ -27648,16 +27636,26 @@ if (module.hot) {(function () {  module.hot.accept()
   }
 })()}
 },{"../mixins/formulas.vue":35,"../partials/damage-optimization-chart.vue":36,"vue":31,"vue-hot-reload-api":5,"vueify-insert-css":32}],41:[function(require,module,exports){
-"use strict";
+'use strict';
 
 module.exports = {
     data: function data() {
         return {
-            session: session
+            session: session,
+            progress: this.$parent.progress
         };
     },
     created: function created() {
-        this.get();
+        this.progress.start();
+    },
+    ready: function ready() {
+        // load authenticated user's data
+        this.$resource('//' + this.session.api + '/user-heroes', {}, {}, { xhr: { withCredentials: true } }).get().then(function (response) {
+            this.$set('user', response.data);
+            this.progress.done();
+        }, function (response) {
+            console.log('error: ', response);
+        });
     },
     methods: {
         get: function get() {
@@ -27669,7 +27667,7 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n\n<p><em>You haven't saved any heroes! ):</em></p>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n<button class=\"btn btn-default btn-header\" type=\"submit\">Button</button>\n<select class=\"form-control\">\n    <option>1</option>\n    <option>2</option>\n    <option>3</option>\n    <option>4</option>\n    <option>5</option>\n</select>\n\n<p><em>You haven't saved any heroes! ):</em></p>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)

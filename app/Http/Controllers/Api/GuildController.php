@@ -8,7 +8,6 @@ use App\Guild;
 
 class GuildController extends Controller
 {
-
     protected $guild;
 
     public function __construct(Guild $guild)

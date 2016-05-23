@@ -39,20 +39,7 @@
         components: {
             sidebar: Sidebar,
             modal: Modal
-        },
-        created: function() {
-            this.progress.start();
-        },
-        ready: function() {
-            // load authenticated user's data
-            this.$resource('//api.stash.dev/user',{},{},{ xhr: { withCredentials: true } })
-                .get().then(function (response) {
-                    this.$set('user', response.data);
-                    this.progress.done();
-                }, function (response) {
-                    console.log('error: ', response);
-                });
-        },
+        },        
         methods: {
             modal: function(event, size) {
                 this.$broadcast('modal-open', {event: event, size: size})

@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Guild;
+
 use Socialite;
 
 class User extends Authenticatable
@@ -12,7 +14,18 @@ class User extends Authenticatable
 
     use SoftDeletes;
 
+    protected $fillable = ['discord_id'];
     protected $dates = ['deleted_at'];
+
+    public function heroes()
+    {
+        return $this->hasMany('App\Hero');
+    }
+
+    public function data(Guild $guild)
+    {
+        return $this->guild->member($this->discord_id)
+    }
 
 
     /**

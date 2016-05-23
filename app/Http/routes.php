@@ -29,4 +29,11 @@ Route::group(['middleware' => ['web','auth','api'], 'domain' => 'api.' . env('AP
     Route::get('guild/members', 'GuildController@members');
     Route::resource('guild', 'GuildController', ['only' => ['index']]);
 
+    Route::get('users/heroes', 'UserController@heroes');
+    Route::resource('users', 'UserController', ['only' => ['index','show']]);
+
+    Route::get('user/heroes', 'UserHeroController@heroes');
+    Route::post('user/heroes', 'UserHeroController@store');
+    Route::resource('user.heroes', 'UserHeroController', ['only' => ['index','show','store']]);
+
 });

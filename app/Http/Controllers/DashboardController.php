@@ -25,7 +25,8 @@ class DashboardController extends Controller
                 'discord' => $this->member
             ],
             'userAvatar' => 'https://cdn.discordapp.com/avatars/' . Auth::user()->discord_id . '/' . $this->member->user->avatar . '.jpg',
-            'roles' => $this->guild->roles()
+            'roles' => $this->guild->roles(),
+            'api' => 'api.' . env('APP_DOMAIN')
         ];
 
         return view('app', ['session' => $session]);

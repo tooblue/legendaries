@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHeroesTable extends Migration
+class CreateTraitsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,8 +12,11 @@ class CreateHeroesTable extends Migration
      */
     public function up()
     {
-        Schema::create('heroes', function (Blueprint $table) {
+        Schema::create('traits', function (Blueprint $table) {
             $table->increments('id');
+
+            $table->string('name')->index();
+
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ class CreateHeroesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('heroes');
+        Schema::drop('traits');
     }
 }
