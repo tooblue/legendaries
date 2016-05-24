@@ -19,14 +19,8 @@ class User extends Authenticatable
 
     public function heroes()
     {
-        return $this->hasMany('App\Hero');
+        return $this->hasMany('App\UserHero');
     }
-
-    public function data(Guild $guild)
-    {
-        return $this->guild->member($this->discord_id)
-    }
-
 
     /**
      * Stuff so Laravel doesn't try to mess with remember_token

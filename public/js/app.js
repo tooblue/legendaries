@@ -1,4 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = { "default": require("core-js/library/fn/object/keys"), __esModule: true };
+},{"core-js/library/fn/object/keys":3}],2:[function(require,module,exports){
 /*!
  * Bootstrap v3.3.6 (http://getbootstrap.com)
  * Copyright 2011-2015 Twitter, Inc.
@@ -2363,7 +2365,131 @@ if (typeof jQuery === 'undefined') {
 
 }(jQuery);
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
+require('../../modules/es6.object.keys');
+module.exports = require('../../modules/$.core').Object.keys;
+},{"../../modules/$.core":5,"../../modules/es6.object.keys":13}],4:[function(require,module,exports){
+module.exports = function(it){
+  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
+  return it;
+};
+},{}],5:[function(require,module,exports){
+var core = module.exports = {version: '1.2.6'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+},{}],6:[function(require,module,exports){
+// optional / simple context binding
+var aFunction = require('./$.a-function');
+module.exports = function(fn, that, length){
+  aFunction(fn);
+  if(that === undefined)return fn;
+  switch(length){
+    case 1: return function(a){
+      return fn.call(that, a);
+    };
+    case 2: return function(a, b){
+      return fn.call(that, a, b);
+    };
+    case 3: return function(a, b, c){
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function(/* ...args */){
+    return fn.apply(that, arguments);
+  };
+};
+},{"./$.a-function":4}],7:[function(require,module,exports){
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
+  return it;
+};
+},{}],8:[function(require,module,exports){
+var global    = require('./$.global')
+  , core      = require('./$.core')
+  , ctx       = require('./$.ctx')
+  , PROTOTYPE = 'prototype';
+
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
+    // contains in native
+    own = !IS_FORCED && target && key in target;
+    if(own && key in exports)continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(param){
+        return this instanceof C ? new C(param) : C(param);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    if(IS_PROTO)(exports[PROTOTYPE] || (exports[PROTOTYPE] = {}))[key] = out;
+  }
+};
+// type bitmap
+$export.F = 1;  // forced
+$export.G = 2;  // global
+$export.S = 4;  // static
+$export.P = 8;  // proto
+$export.B = 16; // bind
+$export.W = 32; // wrap
+module.exports = $export;
+},{"./$.core":5,"./$.ctx":6,"./$.global":10}],9:[function(require,module,exports){
+module.exports = function(exec){
+  try {
+    return !!exec();
+  } catch(e){
+    return true;
+  }
+};
+},{}],10:[function(require,module,exports){
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
+},{}],11:[function(require,module,exports){
+// most Object methods by ES6 should accept primitives
+var $export = require('./$.export')
+  , core    = require('./$.core')
+  , fails   = require('./$.fails');
+module.exports = function(KEY, exec){
+  var fn  = (core.Object || {})[KEY] || Object[KEY]
+    , exp = {};
+  exp[KEY] = exec(fn);
+  $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
+};
+},{"./$.core":5,"./$.export":8,"./$.fails":9}],12:[function(require,module,exports){
+// 7.1.13 ToObject(argument)
+var defined = require('./$.defined');
+module.exports = function(it){
+  return Object(defined(it));
+};
+},{"./$.defined":7}],13:[function(require,module,exports){
+// 19.1.2.14 Object.keys(O)
+var toObject = require('./$.to-object');
+
+require('./$.object-sap')('keys', function($keys){
+  return function keys(it){
+    return $keys(toObject(it));
+  };
+});
+},{"./$.object-sap":11,"./$.to-object":12}],14:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.2.3
  * http://jquery.com/
@@ -12207,7 +12333,7 @@ if ( !noGlobal ) {
 return jQuery;
 }));
 
-},{}],3:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
  * @license MIT */
 
@@ -12685,7 +12811,7 @@ return jQuery;
 });
 
 
-},{}],4:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -12778,7 +12904,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],5:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var Vue // late bind
 var map = Object.create(null)
 var shimmed = false
@@ -13078,7 +13204,7 @@ function format (id) {
   return id.match(/[^\/]+\.vue$/)[0]
 }
 
-},{}],6:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 /**
  * Before Interceptor.
  */
@@ -13098,7 +13224,7 @@ module.exports = {
 
 };
 
-},{"../util":29}],7:[function(require,module,exports){
+},{"../util":41}],19:[function(require,module,exports){
 /**
  * Base client.
  */
@@ -13165,7 +13291,7 @@ function parseHeaders(str) {
     return headers;
 }
 
-},{"../../promise":22,"../../util":29,"./xhr":10}],8:[function(require,module,exports){
+},{"../../promise":34,"../../util":41,"./xhr":22}],20:[function(require,module,exports){
 /**
  * JSONP client.
  */
@@ -13215,7 +13341,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":22,"../../util":29}],9:[function(require,module,exports){
+},{"../../promise":34,"../../util":41}],21:[function(require,module,exports){
 /**
  * XDomain client (Internet Explorer).
  */
@@ -13254,7 +13380,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":22,"../../util":29}],10:[function(require,module,exports){
+},{"../../promise":34,"../../util":41}],22:[function(require,module,exports){
 /**
  * XMLHttp client.
  */
@@ -13299,7 +13425,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":22,"../../util":29}],11:[function(require,module,exports){
+},{"../../promise":34,"../../util":41}],23:[function(require,module,exports){
 /**
  * CORS Interceptor.
  */
@@ -13338,7 +13464,7 @@ function crossOrigin(request) {
     return (requestUrl.protocol !== originUrl.protocol || requestUrl.host !== originUrl.host);
 }
 
-},{"../util":29,"./client/xdr":9}],12:[function(require,module,exports){
+},{"../util":41,"./client/xdr":21}],24:[function(require,module,exports){
 /**
  * Header Interceptor.
  */
@@ -13366,7 +13492,7 @@ module.exports = {
 
 };
 
-},{"../util":29}],13:[function(require,module,exports){
+},{"../util":41}],25:[function(require,module,exports){
 /**
  * Service for sending network requests.
  */
@@ -13465,7 +13591,7 @@ Http.headers = {
 
 module.exports = _.http = Http;
 
-},{"../promise":22,"../util":29,"./before":6,"./client":7,"./cors":11,"./header":12,"./interceptor":14,"./jsonp":15,"./method":16,"./mime":17,"./timeout":18}],14:[function(require,module,exports){
+},{"../promise":34,"../util":41,"./before":18,"./client":19,"./cors":23,"./header":24,"./interceptor":26,"./jsonp":27,"./method":28,"./mime":29,"./timeout":30}],26:[function(require,module,exports){
 /**
  * Interceptor factory.
  */
@@ -13512,7 +13638,7 @@ function when(value, fulfilled, rejected) {
     return promise.then(fulfilled, rejected);
 }
 
-},{"../promise":22,"../util":29}],15:[function(require,module,exports){
+},{"../promise":34,"../util":41}],27:[function(require,module,exports){
 /**
  * JSONP Interceptor.
  */
@@ -13532,7 +13658,7 @@ module.exports = {
 
 };
 
-},{"./client/jsonp":8}],16:[function(require,module,exports){
+},{"./client/jsonp":20}],28:[function(require,module,exports){
 /**
  * HTTP method override Interceptor.
  */
@@ -13551,7 +13677,7 @@ module.exports = {
 
 };
 
-},{}],17:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /**
  * Mime Interceptor.
  */
@@ -13589,7 +13715,7 @@ module.exports = {
 
 };
 
-},{"../util":29}],18:[function(require,module,exports){
+},{"../util":41}],30:[function(require,module,exports){
 /**
  * Timeout Interceptor.
  */
@@ -13621,7 +13747,7 @@ module.exports = function () {
     };
 };
 
-},{}],19:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 /**
  * Install plugin.
  */
@@ -13676,7 +13802,7 @@ if (window.Vue) {
 
 module.exports = install;
 
-},{"./http":13,"./promise":22,"./resource":23,"./url":24,"./util":29}],20:[function(require,module,exports){
+},{"./http":25,"./promise":34,"./resource":35,"./url":36,"./util":41}],32:[function(require,module,exports){
 /**
  * Promises/A+ polyfill v1.1.4 (https://github.com/bramstein/promis)
  */
@@ -13857,7 +13983,7 @@ p.catch = function (onRejected) {
 
 module.exports = Promise;
 
-},{"../util":29}],21:[function(require,module,exports){
+},{"../util":41}],33:[function(require,module,exports){
 /**
  * URL Template v2.0.6 (https://github.com/bramstein/url-template)
  */
@@ -14009,7 +14135,7 @@ exports.encodeReserved = function (str) {
     }).join('');
 };
 
-},{}],22:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 /**
  * Promise adapter.
  */
@@ -14120,7 +14246,7 @@ p.always = function (callback) {
 
 module.exports = Promise;
 
-},{"./lib/promise":20,"./util":29}],23:[function(require,module,exports){
+},{"./lib/promise":32,"./util":41}],35:[function(require,module,exports){
 /**
  * Service for interacting with RESTful services.
  */
@@ -14232,7 +14358,7 @@ Resource.actions = {
 
 module.exports = _.resource = Resource;
 
-},{"./util":29}],24:[function(require,module,exports){
+},{"./util":41}],36:[function(require,module,exports){
 /**
  * Service for URL templating.
  */
@@ -14364,7 +14490,7 @@ function serialize(params, obj, scope) {
 
 module.exports = _.url = Url;
 
-},{"../util":29,"./legacy":25,"./query":26,"./root":27,"./template":28}],25:[function(require,module,exports){
+},{"../util":41,"./legacy":37,"./query":38,"./root":39,"./template":40}],37:[function(require,module,exports){
 /**
  * Legacy Transform.
  */
@@ -14412,7 +14538,7 @@ function encodeUriQuery(value, spaces) {
         replace(/%20/g, (spaces ? '%20' : '+'));
 }
 
-},{"../util":29}],26:[function(require,module,exports){
+},{"../util":41}],38:[function(require,module,exports){
 /**
  * Query Parameter Transform.
  */
@@ -14438,7 +14564,7 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":29}],27:[function(require,module,exports){
+},{"../util":41}],39:[function(require,module,exports){
 /**
  * Root Prefix Transform.
  */
@@ -14456,7 +14582,7 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":29}],28:[function(require,module,exports){
+},{"../util":41}],40:[function(require,module,exports){
 /**
  * URL Template (RFC 6570) Transform.
  */
@@ -14474,7 +14600,7 @@ module.exports = function (options) {
     return url;
 };
 
-},{"../lib/url-template":21}],29:[function(require,module,exports){
+},{"../lib/url-template":33}],41:[function(require,module,exports){
 /**
  * Utility functions.
  */
@@ -14598,7 +14724,7 @@ function merge(target, source, deep) {
     }
 }
 
-},{}],30:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /*!
  * vue-router v0.7.13
  * (c) 2016 Evan You
@@ -17308,7 +17434,7 @@ function merge(target, source, deep) {
   return Router;
 
 }));
-},{}],31:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (process,global){
 /*!
  * Vue.js v1.0.21
@@ -27234,7 +27360,7 @@ setTimeout(function () {
 
 module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":4}],32:[function(require,module,exports){
+},{"_process":16}],44:[function(require,module,exports){
 var inserted = exports.cache = {}
 
 exports.insert = function (css) {
@@ -27254,7 +27380,7 @@ exports.insert = function (css) {
   return elem
 }
 
-},{}],33:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 'use strict';
 
 /*
@@ -27297,7 +27423,7 @@ router.map({
 
 router.start(App, '#vue');
 
-},{"./app.vue":34,"./views/calculator.vue":40,"./views/dashboard.vue":41,"bootstrap-sass":1,"jquery":2,"vue":31,"vue-resource":19,"vue-router":30}],34:[function(require,module,exports){
+},{"./app.vue":46,"./views/calculator.vue":52,"./views/dashboard.vue":53,"bootstrap-sass":2,"jquery":14,"vue":43,"vue-resource":31,"vue-router":42}],46:[function(require,module,exports){
 var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n.content[_v-21094ee4] {\n  position: relative; }\n")
 'use strict';
 
@@ -27340,7 +27466,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./partials/modal.vue":37,"./partials/sidebar.vue":39,"nprogress":3,"vue":31,"vue-hot-reload-api":5,"vueify-insert-css":32}],35:[function(require,module,exports){
+},{"./partials/modal.vue":49,"./partials/sidebar.vue":51,"nprogress":15,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],47:[function(require,module,exports){
 "use strict";
 
 module.exports = {
@@ -27368,7 +27494,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":31,"vue-hot-reload-api":5}],36:[function(require,module,exports){
+},{"vue":43,"vue-hot-reload-api":17}],48:[function(require,module,exports){
 'use strict';
 
 var Formulas = require('../mixins/formulas.vue');
@@ -27456,7 +27582,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/formulas.vue":35,"vue":31,"vue-hot-reload-api":5}],37:[function(require,module,exports){
+},{"../mixins/formulas.vue":47,"vue":43,"vue-hot-reload-api":17}],49:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -27522,7 +27648,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":31,"vue-hot-reload-api":5}],38:[function(require,module,exports){
+},{"vue":43,"vue-hot-reload-api":17}],50:[function(require,module,exports){
 "use strict";
 
 module.exports = {
@@ -27550,7 +27676,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":31,"vue-hot-reload-api":5}],39:[function(require,module,exports){
+},{"vue":43,"vue-hot-reload-api":17}],51:[function(require,module,exports){
 'use strict';
 
 var Preloader = require('./preloader.vue');
@@ -27582,7 +27708,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./preloader.vue":38,"vue":31,"vue-hot-reload-api":5}],40:[function(require,module,exports){
+},{"./preloader.vue":50,"vue":43,"vue-hot-reload-api":17}],52:[function(require,module,exports){
 var __vueify_style__ = require("vueify-insert-css").insert("/* line 6, stdin */\n.chart[_v-14884593] {\n  width: 100%;\n  height: 175px; }\n\n/* line 12, stdin */\n.results span[_v-14884593] {\n  display: block;\n  font-size: 2em; }\n\n/* line 16, stdin */\n.results.normal[_v-14884593] {\n  color: #ffcd81; }\n  /* line 18, stdin */\n  .results.normal span[_v-14884593] {\n    color: #ffb544; }\n\n/* line 22, stdin */\n.results.average[_v-14884593] {\n  color: #87c2ff; }\n  /* line 24, stdin */\n  .results.average span[_v-14884593] {\n    color: #4AA3FF; }\n\n/* line 28, stdin */\n.results.critical[_v-14884593] {\n  color: #ff9e9e; }\n  /* line 30, stdin */\n  .results.critical span[_v-14884593] {\n    color: #FF6161; }\n")
 'use strict';
 
@@ -27635,39 +27761,67 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/formulas.vue":35,"../partials/damage-optimization-chart.vue":36,"vue":31,"vue-hot-reload-api":5,"vueify-insert-css":32}],41:[function(require,module,exports){
+},{"../mixins/formulas.vue":47,"../partials/damage-optimization-chart.vue":48,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],53:[function(require,module,exports){
 'use strict';
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = {
     data: function data() {
         return {
             session: session,
-            progress: this.$parent.progress
+            progress: this.$parent.progress,
+            resource: {
+                'userHeroes': this.$resource('//' + session.api + '/users/' + session.user.app.id + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } }),
+                'heroes': this.$resource('//' + session.api + '/heroes', {}, {}, { xhr: { withCredentials: true } })
+            },
+            heroes: [],
+            userHeroes: [],
+            newHero: {
+                'id': 1
+            }
         };
     },
     created: function created() {
         this.progress.start();
     },
     ready: function ready() {
-        // load authenticated user's data
-        this.$resource('//' + this.session.api + '/user-heroes', {}, {}, { xhr: { withCredentials: true } }).get().then(function (response) {
-            this.$set('user', response.data);
-            this.progress.done();
-        }, function (response) {
-            console.log('error: ', response);
-        });
+        this.getUserHeroes();
+        this.getHeroes();
     },
     methods: {
-        get: function get() {
-            // ajax request to fetch resource
+        getUserHeroes: function getUserHeroes() {
+            this.resource.userHeroes.get().then(function (response) {
+                if ((0, _keys2.default)(response.data).length !== 0) this.$set('userHeroes', response.data);
+                this.progress.done();
+            }, function (response) {
+                console.log('error: ', response);
+            });
         },
-        delete: function _delete() {
-            // ajax request to delete resource
+        createUserHero: function createUserHero() {
+            this.resource.userHeroes.save({}, { hero_id: this.newHero.id, _token: this.session.token }).then(function (response) {
+                this.userHeroes.push(response.data);
+                this.progress.done();
+            }, function (response) {
+                console.log('error: ', response);
+            });
+        },
+        getHeroes: function getHeroes() {
+            this.resource.heroes.get().then(function (response) {
+                this.$set('heroes', response.data);
+                this.progress.done();
+            }, function (response) {
+                console.log('error: ', response);
+            });
         }
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n<button class=\"btn btn-default btn-header\" type=\"submit\">Button</button>\n<select class=\"form-control\">\n    <option>1</option>\n    <option>2</option>\n    <option>3</option>\n    <option>4</option>\n    <option>5</option>\n</select>\n\n<p><em>You haven't saved any heroes! ):</em></p>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n<form class=\"form-inline form-header\">\n    <select class=\"form-control\" v-model=\"newHero\">\n        <option v-for=\"hero in heroes\" v-bind:value=\"{ id: hero.id }\">{{ hero.name }}</option>\n    </select>\n    <button class=\"btn btn-default btn-header\" type=\"submit\" v-on:click.prevent=\"createUserHero\">Add</button>\n</form>\n\n<template v-if=\"userHeroes.length !== 0\">\n    <div v-for=\"hero in userHeroes\" class=\"user-hero clearfix\">\n        <img src=\"/img/heroes/{{ hero.hero.name | lowercase }}.png\" class=\"pull-left\">\n        <div class=\"pull-left\">\n            <ul>\n                <li><strong>{{ hero.hero.name }}</strong></li>\n                <li>ATK <strong>{{ hero.atk }}</strong></li>\n                <li>DEF <strong>{{ hero.def }}</strong></li>\n                <li>HP <strong>{{ hero.hp }}</strong></li>\n                <li>SPD <strong>{{ hero.spd }}</strong></li>\n            </ul>\n        </div>\n        <div class=\"pull-right\">\n            <ul>\n                <li>CR <strong>{{ hero.cr * 100 }}%</strong></li>\n                <li>CD <strong>{{ hero.cd * 100 }}%</strong></li>\n                <li>PEN <strong>{{ hero.pen * 100 }}%</strong></li>\n                <li>ACC <strong>{{ hero.acc * 100 }}%</strong></li>\n                <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>\n            </ul>\n        </div>\n    </div>\n</template>\n<p v-else=\"\"><em>You haven't saved any heroes! ):</em></p>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -27679,6 +27833,6 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":31,"vue-hot-reload-api":5}]},{},[33]);
+},{"babel-runtime/core-js/object/keys":1,"vue":43,"vue-hot-reload-api":17}]},{},[45]);
 
 //# sourceMappingURL=app.js.map

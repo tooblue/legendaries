@@ -5853,11 +5853,7 @@ button.close {
 #navbar-top {
   min-height: 150px; }
   #navbar-top .navbar-brand {
-    color: #FFC800;
-    background-image: url(/img/stash-w.svg);
-    background-repeat: no-repeat;
-    background-size: auto 20px;
-    background-position: 15px 15px; }
+    color: #FFC800; }
     #navbar-top .navbar-brand span.logo {
       color: #fff;
       font-size: 10pt;
@@ -6036,5 +6032,22 @@ button.close {
 .modal .modal-content {
   border-radius: 0px;
   border: 3px solid #212121; }
+
+.user-hero {
+  display: inline-block;
+  width: 20%;
+  font-size: 9px;
+  padding: 8px; }
+  .user-hero img {
+    width: 37%; }
+  .user-hero > div {
+    margin-left: 8px; }
+    .user-hero > div ul {
+      margin: 0;
+      padding: 0;
+      list-style: none; }
+  .user-hero.earth {
+    color: #0C4C00;
+    background-color: #D8FFD1; }
 
 /*# sourceMappingURL=app.css.map */

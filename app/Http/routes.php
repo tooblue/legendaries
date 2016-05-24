@@ -23,17 +23,19 @@ Route::group(['middleware' => ['web','auth'], 'domain' => 'app.' . env('APP_DOMA
 });
 
 // Legendaries API
-Route::group(['middleware' => ['web','auth','api'], 'domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
+Route::group(['middleware' => ['web','auth','api','cors'], 'domain' => 'api.' . env('APP_DOMAIN'), 'as' => 'api::', 'namespace' => 'Api'], function () {
 
     Route::get('guild/members/{id}', 'GuildController@member');
     Route::get('guild/members', 'GuildController@members');
     Route::resource('guild', 'GuildController', ['only' => ['index']]);
 
-    Route::get('users/heroes', 'UserController@heroes');
+    Route::get('users/heroes', 'UserHeroController@all'); // list all UserHeroes
+    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index','show','store']], [
+        'parameters' => 'singular'
+    ]);
+
     Route::resource('users', 'UserController', ['only' => ['index','show']]);
 
-    Route::get('user/heroes', 'UserHeroController@heroes');
-    Route::post('user/heroes', 'UserHeroController@store');
-    Route::resource('user.heroes', 'UserHeroController', ['only' => ['index','show','store']]);
+    Route::resource('heroes', 'HeroController', ['only' => ['index','show']]);
 
 });

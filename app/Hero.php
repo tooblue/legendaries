@@ -6,6 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Hero extends Model
 {
+    protected $appends = ['type','attribute'];
+
+    public function getTypeAttribute()
+    {
+        return $this->type()->get();
+    }
+
+    public function getAttributeAttribute()
+    {
+        return $this->attribute()->get();
+    }
+
+    public function type()
+    {
+        return $this->belongsTo('App\Type');
+    }
+
     public function attribute()
     {
         return $this->belongsTo('App\Attribute');

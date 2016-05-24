@@ -10,28 +10,28 @@ use App\User;
 
 use Auth;
 
-class UserHeroController extends Controller
+class UserController extends Controller
 {
-    protected $user;
+    protected $users;
 
-    public function __construct(User $user)
+    public function __construct(User $users)
     {
-        $this->user = $user;
+        $this->users = $users;
     }
 
     public function index()
     {
-        return response()->json( $this->$user::all() );
+        return response()->json( $this->users::all() );
     }
 
     public function show($id)
     {
-        return response()->json( $this->user::find($id) );
+        return response()->json( $this->users::find($id) );
     }
 
     public function heroes()
     {
-        return response()->json( $this->$user::heroes() );
+        return response()->json( $this->users::heroes() );
     }
 
 }

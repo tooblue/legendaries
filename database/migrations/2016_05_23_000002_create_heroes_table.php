@@ -20,8 +20,8 @@ class CreateHeroesTable extends Migration
             $table->integer('attribute_id')->unsigned()->index();
             $table->foreign('attribute_id')->references('id')->on('attributes');
 
-            $table->integer('class_id')->unsigned()->index();
-            $table->foreign('class_id')->references('id')->on('classes');
+            $table->integer('type_id')->unsigned()->index();
+            $table->foreign('type_id')->references('id')->on('types');
 
             $table->timestamps();
         });
