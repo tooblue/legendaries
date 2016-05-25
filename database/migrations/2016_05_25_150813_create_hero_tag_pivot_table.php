@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHeroTraitPivotTable extends Migration
+class CreateHeroTagPivotTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,12 +12,12 @@ class CreateHeroTraitPivotTable extends Migration
      */
     public function up()
     {
-        Schema::create('hero_trait', function (Blueprint $table) {
+        Schema::create('hero_tag', function (Blueprint $table) {
             $table->integer('hero_id')->unsigned()->index();
             $table->foreign('hero_id')->references('id')->on('heroes')->onDelete('cascade');
-            $table->integer('trait_id')->unsigned()->index();
-            $table->foreign('trait_id')->references('id')->on('traits')->onDelete('cascade');
-            $table->primary(['hero_id', 'trait_id']);
+            $table->integer('tag_id')->unsigned()->index();
+            $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
+            $table->primary(['hero_id', 'tag_id']);
         });
     }
 
@@ -28,6 +28,6 @@ class CreateHeroTraitPivotTable extends Migration
      */
     public function down()
     {
-        Schema::drop('hero_trait');
+        Schema::drop('hero_tag');
     }
 }

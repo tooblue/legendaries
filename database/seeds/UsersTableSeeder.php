@@ -11,8 +11,8 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('users')->insert([
-            'discord_id' => '172053554113019904' //missaoi
-        ]);
+        $user = new App\User;
+        $user->discord_id = '172053554113019904';
+        $user->save();
     }
 }

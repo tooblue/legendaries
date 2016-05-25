@@ -19,7 +19,7 @@ class User extends Authenticatable
 
     public function heroes()
     {
-        return $this->hasMany('App\UserHero');
+        return $this->hasMany('App\Hero');
     }
 
     /**

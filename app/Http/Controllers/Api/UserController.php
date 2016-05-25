@@ -29,9 +29,4 @@ class UserController extends Controller
         return response()->json( $this->users::find($id) );
     }
 
-    public function heroes()
-    {
-        return response()->json( $this->users::heroes() );
-    }
-
 }

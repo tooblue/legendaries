@@ -1,13 +1,9 @@
-<style lang="scss" scoped>
-
-</style>
-
 <template>
 
     <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modal-label">
         <div class="modal-dialog {{ size }}" role="document">
             <div class="modal-content">
-                {{{ content }}}
+                <component :is="view"></component>
             </div>
         </div>
     </div>
@@ -15,48 +11,30 @@
 </template>
 
 <script>
+    var Hero = require('./hero.vue');
+
     module.exports = {
         data : function() {
             return {
-                preloader: "Loading...",
-                content: this.preloader,
-                modal: {
-                    event: {},
-                    size: ''
-                },
+                view: 'hero',
+                size: ''
             }
         },
-        computed: {
-            path: function () {
-                if(this.modal.event.target.pathname.substr(0,1) === '/') {
-                    return this.modal.event.target.pathname.substr(1);
-                }
-                else { return this.modal.event.target.pathname; }
-            },
-            size: function () {
-                if ( this.modal.size === "small" ) { return 'modal-sm'; }
-                else if ( this.modal.size === "large" ) { return 'modal-lg'; }
-                else { return ''; }
-            }
-        },
-        http: {
-            root: '/modal'
+        components: {
+            hero: Hero
         },
         methods: {
-            load: function() {
-                this.$http.get(this.path).then(function (response) {
-                    this.$set('content', response.data);
-                    $('#modal').modal();
-                }, function (response) {
-                    console.log('error: ', response.status, response.headers(), response.data);
-                });
+            setSize: function (size) {
+                if ( size === "small" ) { this.$set('size', 'modal-sm'); }
+                else if ( size === "large" ) { this.$set('size', 'modal-lg');  }
+                else { this.$set('size', '');  }
             }
         },
         events: {
-            'modal-open': function(modal) {
-                this.$set('content', this.preloader);
-                this.$set('modal', modal);
-                this.load();
+            'modal-open-global': function(view, size = '') {
+                console.log('modal.vue');
+                this.$set('view', view);
+                this.setSize(size);
             }
         }
     }

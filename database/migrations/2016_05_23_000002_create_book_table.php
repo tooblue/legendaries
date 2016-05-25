@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHeroesTable extends Migration
+class CreateBookTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class CreateHeroesTable extends Migration
      */
     public function up()
     {
-        Schema::create('heroes', function (Blueprint $table) {
+        Schema::create('book', function (Blueprint $table) {
             $table->increments('id');
 
             $table->string('name')->unique();
@@ -22,8 +22,6 @@ class CreateHeroesTable extends Migration
 
             $table->integer('type_id')->unsigned()->index();
             $table->foreign('type_id')->references('id')->on('types');
-
-            $table->timestamps();
         });
     }
 
@@ -34,6 +32,6 @@ class CreateHeroesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('heroes');
+        Schema::drop('book');
     }
 }

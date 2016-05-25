@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHeroSkillPivotTable extends Migration
+class CreateBookSkillPivotTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,12 +12,12 @@ class CreateHeroSkillPivotTable extends Migration
      */
     public function up()
     {
-        Schema::create('hero_skill', function (Blueprint $table) {
-            $table->integer('hero_id')->unsigned()->index();
-            $table->foreign('hero_id')->references('id')->on('heroes')->onDelete('cascade');
+        Schema::create('book_skill', function (Blueprint $table) {
+            $table->integer('book_id')->unsigned()->index();
+            $table->foreign('book_id')->references('id')->on('book')->onDelete('cascade');
             $table->integer('skill_id')->unsigned()->index();
             $table->foreign('skill_id')->references('id')->on('skills')->onDelete('cascade');
-            $table->primary(['hero_id', 'skill_id']);
+            $table->primary(['book_id', 'skill_id']);
         });
     }
 
@@ -28,6 +28,6 @@ class CreateHeroSkillPivotTable extends Migration
      */
     public function down()
     {
-        Schema::drop('hero_skill');
+        Schema::drop('book_skill');
     }
 }

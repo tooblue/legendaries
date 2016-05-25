@@ -29,13 +29,14 @@ Route::group(['middleware' => ['web','auth','api','cors'], 'domain' => 'api.' . 
     Route::get('guild/members', 'GuildController@members');
     Route::resource('guild', 'GuildController', ['only' => ['index']]);
 
-    Route::get('users/heroes', 'UserHeroController@all'); // list all UserHeroes
-    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index','show','store']], [
+    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index','store']], [
         'parameters' => 'singular'
     ]);
 
+    Route::resource('heroes', 'HeroController', ['only' => ['index','show']]);
+
     Route::resource('users', 'UserController', ['only' => ['index','show']]);
 
-    Route::resource('heroes', 'HeroController', ['only' => ['index','show']]);
+    Route::resource('book', 'BookController', ['only' => ['index','show']]);
 
 });

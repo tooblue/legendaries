@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUserHeroesTable extends Migration
+class CreateHeroesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class CreateUserHeroesTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_heroes', function (Blueprint $table) {
+        Schema::create('heroes', function (Blueprint $table) {
             $table->increments('id');
 
             $table->integer('atk')->default(0);
@@ -28,8 +28,8 @@ class CreateUserHeroesTable extends Migration
             $table->integer('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users');
 
-            $table->integer('hero_id')->unsigned()->index();
-            $table->foreign('hero_id')->references('id')->on('heroes');
+            $table->integer('book_id')->unsigned()->index();
+            $table->foreign('book_id')->references('id')->on('book');
 
             $table->timestamps();
             $table->softDeletes();
@@ -43,6 +43,6 @@ class CreateUserHeroesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('user_heroes');
+        Schema::drop('heroes');
     }
 }

@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Type extends Model
 {
-    public function heroes()
+    public $timestamps = false;
+    
+    public function book()
     {
-        return $this->hasMany('App\Hero');
+        return $this->hasMany('App\Book');
     }
 }

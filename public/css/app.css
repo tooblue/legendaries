@@ -6033,15 +6033,23 @@ button.close {
   border-radius: 0px;
   border: 3px solid #212121; }
 
+.form-header {
+  float: right;
+  position: relative;
+  top: -65px; }
+
 .user-hero {
   display: inline-block;
   width: 20%;
   font-size: 9px;
-  padding: 8px; }
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-right: 10px; }
   .user-hero img {
     width: 37%; }
   .user-hero > div {
-    margin-left: 8px; }
+    margin-left: 10px; }
     .user-hero > div ul {
       margin: 0;
       padding: 0;

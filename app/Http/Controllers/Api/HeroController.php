@@ -19,12 +19,12 @@ class HeroController extends Controller
 
     public function index()
     {
-        return response()->json( $this->heroes::all() );
+        return response()->json( $this->heroes::with('book')->get() );
     }
 
     public function show($id)
     {
-        return response()->json( $this->heroes::find($id) );
+        return response()->json( $this->heroes::with('book','tags')->find($id) );
     }
 
 }

@@ -27423,14 +27423,14 @@ router.map({
 
 router.start(App, '#vue');
 
-},{"./app.vue":46,"./views/calculator.vue":52,"./views/dashboard.vue":53,"bootstrap-sass":2,"jquery":14,"vue":43,"vue-resource":31,"vue-router":42}],46:[function(require,module,exports){
+},{"./app.vue":46,"./views/calculator.vue":53,"./views/dashboard.vue":54,"bootstrap-sass":2,"jquery":14,"vue":43,"vue-resource":31,"vue-router":42}],46:[function(require,module,exports){
 var __vueify_style__ = require("vueify-insert-css").insert("/* line 2, stdin */\n.content[_v-21094ee4] {\n  position: relative; }\n")
 'use strict';
 
 var nprogress = require('nprogress');
 
-var Sidebar = require('./partials/sidebar.vue');
-var Modal = require('./partials/modal.vue');
+var Sidebar = require('./components/sidebar.vue');
+var Modal = require('./modals/_modal.vue');
 
 module.exports = {
     data: function data() {
@@ -27443,9 +27443,11 @@ module.exports = {
         sidebar: Sidebar,
         modal: Modal
     },
-    methods: {
-        modal: function modal(event, size) {
-            this.$broadcast('modal-open', { event: event, size: size });
+    events: {
+        'modal-open': function modalOpen(view) {
+            var size = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+            this.$broadcast('modal-open-global', view, size);
         }
     }
 };
@@ -27466,35 +27468,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./partials/modal.vue":49,"./partials/sidebar.vue":51,"nprogress":15,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],47:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-    methods: {
-        calculateDamage: function calculateDamage(heroAtk, skillPwr) {
-            return Math.round(heroAtk * (skillPwr / 100));
-        },
-        calculateCritDamage: function calculateCritDamage(damage, heroCd) {
-            return Math.round(damage + damage * (heroCd / 100));
-        },
-        calculateAvgDamage: function calculateAvgDamage(damage, heroCr, crDamage) {
-            return Math.round(damage * ((100 - heroCr) / 100) + crDamage * (heroCr / 100));
-        }
-    }
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\mixins\\formulas.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"vue":43,"vue-hot-reload-api":17}],48:[function(require,module,exports){
+},{"./components/sidebar.vue":49,"./modals/_modal.vue":52,"nprogress":15,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],47:[function(require,module,exports){
 'use strict';
 
 var Formulas = require('../mixins/formulas.vue');
@@ -27575,14 +27549,127 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\partials\\damage-optimization-chart.vue"
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\damage-optimization-chart.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/formulas.vue":47,"vue":43,"vue-hot-reload-api":17}],49:[function(require,module,exports){
+},{"../mixins/formulas.vue":50,"vue":43,"vue-hot-reload-api":17}],48:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+    data: function data() {
+        return {
+            msg: "hello from sidebar! :D"
+        };
+    },
+    events: {
+        'preloader-remove': function preloaderRemove() {
+            this.$remove();
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"preloader fade in\"></div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\preloader.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":43,"vue-hot-reload-api":17}],49:[function(require,module,exports){
+'use strict';
+
+var Preloader = require('./preloader.vue');
+
+module.exports = {
+    data: function data() {
+        return {
+            session: session
+        };
+    },
+    props: ['user'],
+    components: {
+        preloader: Preloader
+    },
+    ready: function ready() {
+        this.$broadcast('preloader-remove');
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"sidebar\">\n    <div class=\"list-group\">\n        <a href=\"#\" class=\"list-group-item user clearfix\">\n            <img class=\"gh-avatar pull-left\" v-bind:src=\"session.userAvatar\" alt=\"{{ session.user.discord.user.username }}\">\n            <div class=\"stats pull-right\">\n                <p class=\"usr\">{{ session.user.discord.user.username }}</p>\n                <p class=\"bookmark\" v-for=\"role in session.roles | filterBy session.user.discord.roles[0] in 'id'\">{{ role.name }}</p>\n                <p class=\"comment\"><strong>3000</strong> posts</p>\n            </div>\n        </a>\n    </div>\n    <div class=\"list-group\">\n        <a v-link=\"{name: 'dashboard'}\" class=\"list-group-item\">My Heroes <i class=\"fa fa-users pull-right\"></i></a>\n        <a v-link=\"{name: 'calculator'}\" class=\"list-group-item\">Damage Calculator <i class=\"fa fa-calculator pull-right\"></i></a>\n    </div>\n    <preloader></preloader>\n</div>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\sidebar.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"./preloader.vue":48,"vue":43,"vue-hot-reload-api":17}],50:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+    methods: {
+        calculateDamage: function calculateDamage(heroAtk, skillPwr) {
+            return Math.round(heroAtk * (skillPwr / 100));
+        },
+        calculateCritDamage: function calculateCritDamage(damage, heroCd) {
+            return Math.round(damage + damage * (heroCd / 100));
+        },
+        calculateAvgDamage: function calculateAvgDamage(damage, heroCr, crDamage) {
+            return Math.round(damage * ((100 - heroCr) / 100) + crDamage * (heroCr / 100));
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\mixins\\formulas.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":43,"vue-hot-reload-api":17}],51:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+    methods: {
+        openModal: function openModal(view) {
+            var size = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+
+            console.log('beep beep');
+            this.$dispatch('modal-open', view, size);
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\mixins\\modals.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":43,"vue-hot-reload-api":17}],52:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -27636,83 +27723,23 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\" _v-36fa99f4=\"\">\n    <div class=\"modal-dialog {{ size }}\" role=\"document\" _v-36fa99f4=\"\">\n        <div class=\"modal-content\" _v-36fa99f4=\"\">\n            {{{ content }}}\n        </div>\n    </div>\n</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\" _v-fd6824de=\"\">\n    <div class=\"modal-dialog {{ size }}\" role=\"document\" _v-fd6824de=\"\">\n        <div class=\"modal-content\" _v-fd6824de=\"\">\n            {{{ content }}}\n        </div>\n    </div>\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\partials\\modal.vue"
+  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\modals\\_modal.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":43,"vue-hot-reload-api":17}],50:[function(require,module,exports){
-"use strict";
-
-module.exports = {
-    data: function data() {
-        return {
-            msg: "hello from sidebar! :D"
-        };
-    },
-    events: {
-        'preloader-remove': function preloaderRemove() {
-            this.$remove();
-        }
-    }
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"preloader fade in\"></div>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\partials\\preloader.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"vue":43,"vue-hot-reload-api":17}],51:[function(require,module,exports){
-'use strict';
-
-var Preloader = require('./preloader.vue');
-
-module.exports = {
-    data: function data() {
-        return {
-            session: session
-        };
-    },
-    props: ['user'],
-    components: {
-        preloader: Preloader
-    },
-    ready: function ready() {
-        this.$broadcast('preloader-remove');
-    }
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"sidebar\">\n    <div class=\"list-group\">\n        <a href=\"#\" class=\"list-group-item user clearfix\">\n            <img class=\"gh-avatar pull-left\" v-bind:src=\"session.userAvatar\" alt=\"{{ session.user.discord.user.username }}\">\n            <div class=\"stats pull-right\">\n                <p class=\"usr\">{{ session.user.discord.user.username }}</p>\n                <p class=\"bookmark\" v-for=\"role in session.roles | filterBy session.user.discord.roles[0] in 'id'\">{{ role.name }}</p>\n                <p class=\"comment\"><strong>3000</strong> posts</p>\n            </div>\n        </a>\n    </div>\n    <div class=\"list-group\">\n        <a v-link=\"{name: 'dashboard'}\" class=\"list-group-item\">My Heroes <i class=\"fa fa-users pull-right\"></i></a>\n        <a v-link=\"{name: 'calculator'}\" class=\"list-group-item\">Damage Calculator <i class=\"fa fa-calculator pull-right\"></i></a>\n    </div>\n    <preloader></preloader>\n</div>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\partials\\sidebar.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"./preloader.vue":50,"vue":43,"vue-hot-reload-api":17}],52:[function(require,module,exports){
+},{"vue":43,"vue-hot-reload-api":17}],53:[function(require,module,exports){
 var __vueify_style__ = require("vueify-insert-css").insert("/* line 6, stdin */\n.chart[_v-14884593] {\n  width: 100%;\n  height: 175px; }\n\n/* line 12, stdin */\n.results span[_v-14884593] {\n  display: block;\n  font-size: 2em; }\n\n/* line 16, stdin */\n.results.normal[_v-14884593] {\n  color: #ffcd81; }\n  /* line 18, stdin */\n  .results.normal span[_v-14884593] {\n    color: #ffb544; }\n\n/* line 22, stdin */\n.results.average[_v-14884593] {\n  color: #87c2ff; }\n  /* line 24, stdin */\n  .results.average span[_v-14884593] {\n    color: #4AA3FF; }\n\n/* line 28, stdin */\n.results.critical[_v-14884593] {\n  color: #ff9e9e; }\n  /* line 30, stdin */\n  .results.critical span[_v-14884593] {\n    color: #FF6161; }\n")
 'use strict';
 
-var Chart = require('../partials/damage-optimization-chart.vue');
+var Chart = require('../components/damage-optimization-chart.vue');
 var Formulas = require('../mixins/formulas.vue');
 
 module.exports = {
@@ -27761,7 +27788,7 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/formulas.vue":47,"../partials/damage-optimization-chart.vue":48,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],53:[function(require,module,exports){
+},{"../components/damage-optimization-chart.vue":47,"../mixins/formulas.vue":50,"vue":43,"vue-hot-reload-api":17,"vueify-insert-css":44}],54:[function(require,module,exports){
 'use strict';
 
 var _keys = require('babel-runtime/core-js/object/keys');
@@ -27770,17 +27797,20 @@ var _keys2 = _interopRequireDefault(_keys);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var Modals = require('../mixins/modals.vue');
+
 module.exports = {
+    mixins: [Modals],
     data: function data() {
         return {
             session: session,
             progress: this.$parent.progress,
             resource: {
-                'userHeroes': this.$resource('//' + session.api + '/users/' + session.user.app.id + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } }),
-                'heroes': this.$resource('//' + session.api + '/heroes', {}, {}, { xhr: { withCredentials: true } })
+                'heroes': this.$resource('//' + session.api + '/users/' + session.user.app.id + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } }),
+                'book': this.$resource('//' + session.api + '/book', {}, {}, { xhr: { withCredentials: true } })
             },
+            book: [],
             heroes: [],
-            userHeroes: [],
             newHero: {
                 'id': 1
             }
@@ -27790,29 +27820,29 @@ module.exports = {
         this.progress.start();
     },
     ready: function ready() {
-        this.getUserHeroes();
         this.getHeroes();
+        this.getBook();
     },
     methods: {
-        getUserHeroes: function getUserHeroes() {
-            this.resource.userHeroes.get().then(function (response) {
-                if ((0, _keys2.default)(response.data).length !== 0) this.$set('userHeroes', response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
-        createUserHero: function createUserHero() {
-            this.resource.userHeroes.save({}, { hero_id: this.newHero.id, _token: this.session.token }).then(function (response) {
-                this.userHeroes.push(response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
         getHeroes: function getHeroes() {
             this.resource.heroes.get().then(function (response) {
-                this.$set('heroes', response.data);
+                if ((0, _keys2.default)(response.data).length !== 0) this.$set('heroes', response.data);
+                this.progress.done();
+            }, function (response) {
+                console.log('error: ', response);
+            });
+        },
+        createHero: function createHero() {
+            this.resource.heroes.save({}, { book_id: this.newHero.id, _token: this.session.token }).then(function (response) {
+                this.heroes.push(response.data);
+                this.progress.done();
+            }, function (response) {
+                console.log('error: ', response);
+            });
+        },
+        getBook: function getBook() {
+            this.resource.book.get().then(function (response) {
+                this.$set('book', response.data);
                 this.progress.done();
             }, function (response) {
                 console.log('error: ', response);
@@ -27821,7 +27851,7 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n<form class=\"form-inline form-header\">\n    <select class=\"form-control\" v-model=\"newHero\">\n        <option v-for=\"hero in heroes\" v-bind:value=\"{ id: hero.id }\">{{ hero.name }}</option>\n    </select>\n    <button class=\"btn btn-default btn-header\" type=\"submit\" v-on:click.prevent=\"createUserHero\">Add</button>\n</form>\n\n<template v-if=\"userHeroes.length !== 0\">\n    <div v-for=\"hero in userHeroes\" class=\"user-hero clearfix\">\n        <img src=\"/img/heroes/{{ hero.hero.name | lowercase }}.png\" class=\"pull-left\">\n        <div class=\"pull-left\">\n            <ul>\n                <li><strong>{{ hero.hero.name }}</strong></li>\n                <li>ATK <strong>{{ hero.atk }}</strong></li>\n                <li>DEF <strong>{{ hero.def }}</strong></li>\n                <li>HP <strong>{{ hero.hp }}</strong></li>\n                <li>SPD <strong>{{ hero.spd }}</strong></li>\n            </ul>\n        </div>\n        <div class=\"pull-right\">\n            <ul>\n                <li>CR <strong>{{ hero.cr * 100 }}%</strong></li>\n                <li>CD <strong>{{ hero.cd * 100 }}%</strong></li>\n                <li>PEN <strong>{{ hero.pen * 100 }}%</strong></li>\n                <li>ACC <strong>{{ hero.acc * 100 }}%</strong></li>\n                <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>\n            </ul>\n        </div>\n    </div>\n</template>\n<p v-else=\"\"><em>You haven't saved any heroes! ):</em></p>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>My Heroes</h1>\n<form class=\"form-inline form-header\">\n    <select class=\"form-control\" v-model=\"newHero\">\n        <option v-for=\"hero in book\" v-bind:value=\"{ id: hero.id }\">{{ hero.name }}</option>\n    </select>\n    <button class=\"btn btn-default btn-header\" type=\"submit\" v-on:click.prevent=\"createHero\">Add</button>\n</form>\n\n<template v-if=\"heroes.length !== 0\">\n    <template v-for=\"hero in heroes\">\n        <div class=\"user-hero clearfix {{ hero.book.attribute.name }}\" v-on:click=\"openModal('hero')\">\n            <img :src=\"hero.book.img\" class=\"pull-left\">\n            <div class=\"pull-left\">\n                <ul>\n                    <li><strong>{{ hero.book.name }}</strong></li>\n                    <li>ATK <strong>{{ hero.atk }}</strong></li>\n                    <li>DEF <strong>{{ hero.def }}</strong></li>\n                    <li>HP <strong>{{ hero.hp }}</strong></li>\n                    <li>SPD <strong>{{ hero.spd }}</strong></li>\n                </ul>\n            </div>\n            <div class=\"pull-right\">\n                <ul>\n                    <li>CR <strong>{{ hero.cr * 100 }}%</strong></li>\n                    <li>CD <strong>{{ hero.cd * 100 }}%</strong></li>\n                    <li>PEN <strong>{{ hero.pen * 100 }}%</strong></li>\n                    <li>ACC <strong>{{ hero.acc * 100 }}%</strong></li>\n                    <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>\n                </ul>\n            </div>\n        </div>\n    </template>\n</template>\n<p v-else=\"\"><em>You haven't saved any heroes! ):</em></p>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
@@ -27833,6 +27863,6 @@ if (module.hot) {(function () {  module.hot.accept()
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"babel-runtime/core-js/object/keys":1,"vue":43,"vue-hot-reload-api":17}]},{},[45]);
+},{"../mixins/modals.vue":51,"babel-runtime/core-js/object/keys":1,"vue":43,"vue-hot-reload-api":17}]},{},[45]);
 
 //# sourceMappingURL=app.js.map

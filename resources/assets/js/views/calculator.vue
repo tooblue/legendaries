@@ -114,7 +114,7 @@
 </template>
 
 <script>
-    var Chart = require('../partials/damage-optimization-chart.vue');
+    var Chart = require('../components/damage-optimization-chart.vue');
     var Formulas = require('../mixins/formulas.vue');
 
     module.exports = {

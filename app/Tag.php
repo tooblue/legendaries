@@ -4,12 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Attribute extends Model
+class Tag extends Model
 {
     public $timestamps = false;
     
-    public function book()
+    public function heroes()
     {
-        return $this->hasMany('App\Book');
+        return $this->belongsToMany('App\Hero');
     }
 }

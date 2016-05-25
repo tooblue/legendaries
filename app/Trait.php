@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Trait extends Model
 {
-    public function heroes()
+    public $timestamps = false;
+    
+    public function book()
     {
-        return $this->belongsToMany('App\Hero');
+        return $this->belongsToMany('App\Book');
     }
 }

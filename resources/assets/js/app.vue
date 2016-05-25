@@ -26,8 +26,8 @@
 <script>
     var nprogress = require('nprogress');
 
-    var Sidebar = require('./partials/sidebar.vue');
-    var Modal = require('./partials/modal.vue');
+    var Sidebar = require('./components/sidebar.vue');
+    var Modal = require('./modals/_modal.vue');
 
     module.exports = {
         data: function() {
@@ -39,10 +39,10 @@
         components: {
             sidebar: Sidebar,
             modal: Modal
-        },        
-        methods: {
-            modal: function(event, size) {
-                this.$broadcast('modal-open', {event: event, size: size})
+        },
+        events: {
+            'modal-open': function(view, size = '') {
+                this.$broadcast('modal-open-global', view, size)
             }
         }
     }
