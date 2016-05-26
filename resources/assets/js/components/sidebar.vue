@@ -27,7 +27,6 @@
                 session: session,
             }
         },
-        props: ['user'],
         components: {
             preloader: Preloader
         },

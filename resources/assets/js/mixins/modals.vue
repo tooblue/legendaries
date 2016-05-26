@@ -1,9 +1,8 @@
 <script>
     module.exports = {
         methods: {
-            openModal: function (view, size = '') {
-                console.log('beep beep');
-                this.$dispatch('modal-open', view, size)
+            openModal: function (view, data = {}, size = '') {
+                this.$dispatch('modal-open', view, data, size)
             },
         },
     }

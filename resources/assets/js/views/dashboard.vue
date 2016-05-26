@@ -9,7 +9,7 @@
 
     <template v-if="heroes.length !== 0">
         <template v-for="hero in heroes">
-            <div class="user-hero clearfix {{ hero.book.attribute.name }}" v-on:click="openModal('hero')">
+            <div class="user-hero clearfix {{ hero.book.attribute.name }}" v-on:click="openModal('hero',{'hero_id':hero.id})">
                 <img :src="hero.book.img" class="pull-left">
                 <div class="pull-left">
                     <ul>

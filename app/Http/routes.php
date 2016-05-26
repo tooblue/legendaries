@@ -11,6 +11,7 @@ Route::group(['middleware' => ['web'], 'domain' => env('APP_DOMAIN')], function 
         //var_dump(Auth::check()); die();
         return view('splash');
     }]);
+
 });
 
 // Legendaries app
@@ -18,8 +19,6 @@ Route::group(['middleware' => ['web','auth'], 'domain' => 'app.' . env('APP_DOMA
 
     Route::get('/', 'DashboardController@index')->name('dashboard');
 
-    // Modal routes
-    //Route::get('/modal/{view}', 'ModalController@show')->name('modal');
 });
 
 // Legendaries API
@@ -29,11 +28,11 @@ Route::group(['middleware' => ['web','auth','api','cors'], 'domain' => 'api.' . 
     Route::get('guild/members', 'GuildController@members');
     Route::resource('guild', 'GuildController', ['only' => ['index']]);
 
-    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index','store']], [
+    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index', 'store']], [
         'parameters' => 'singular'
     ]);
 
-    Route::resource('heroes', 'HeroController', ['only' => ['index','show']]);
+    Route::resource('heroes', 'HeroController', ['only' => ['index','show', 'store']]);
 
     Route::resource('users', 'UserController', ['only' => ['index','show']]);
 

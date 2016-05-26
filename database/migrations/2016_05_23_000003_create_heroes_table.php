@@ -15,6 +15,7 @@ class CreateHeroesTable extends Migration
         Schema::create('heroes', function (Blueprint $table) {
             $table->increments('id');
 
+            $table->integer('lvl')->default(30);
             $table->integer('atk')->default(0);
             $table->integer('def')->default(0);
             $table->integer('hp')->default(0);

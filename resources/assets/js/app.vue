@@ -14,7 +14,7 @@
             </div>
             <div class="col-sm-3">
 
-                <sidebar :user="user"></sidebar>
+                <sidebar></sidebar>
 
             </div>
         </div>
@@ -41,8 +41,8 @@
             modal: Modal
         },
         events: {
-            'modal-open': function(view, size = '') {
-                this.$broadcast('modal-open-global', view, size)
+            'modal-open': function(view, data = {}, size = '') {
+                this.$broadcast('modal-open-global', view, data, size)
             }
         }
     }

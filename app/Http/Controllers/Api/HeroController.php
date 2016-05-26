@@ -19,12 +19,32 @@ class HeroController extends Controller
 
     public function index()
     {
-        return response()->json( $this->heroes::with('book')->get() );
+        return response()->json( $this->heroes::with('book','tags','user')->get() );
     }
 
     public function show($id)
     {
-        return response()->json( $this->heroes::with('book','tags')->find($id) );
+        return response()->json( $this->heroes::with('book','tags','user')->find($id) );
+    }
+
+    public function store(Request $request, $id)
+    {
+        $hero = Hero::with('user')->find($id);
+
+        if ( $hero->user->id == Auth::user()->id ) {
+            $hero->lvl = $request->lvl;
+            $hero->atk = $request->atk;
+            $hero->def = $request->def;
+            $hero->hp = $request->hp;
+            $hero->spd = $request->spd;
+            $hero->cr = $request->cr;
+            $hero->save();
+
+            return response()->json( $this->heroes::with('book','tags')->find($hero->id) );
+        }
+        else {
+            abort(403);
+        }
     }
 
 }
