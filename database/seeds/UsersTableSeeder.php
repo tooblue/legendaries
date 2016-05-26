@@ -14,5 +14,9 @@ class UsersTableSeeder extends Seeder
         $user = new App\User;
         $user->discord_id = '172053554113019904';
         $user->save();
+
+        $user = new App\User;
+        $user->discord_id = '172113073514086401';
+        $user->save();
     }
 }

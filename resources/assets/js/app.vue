@@ -1,13 +1,7 @@
-<style lang="scss" scoped>
-    .content {
-        position: relative;
-    }
-</style>
-
 <template>
     <div class="content">
         <div class="row">
-            <div class="col-sm-9">
+            <div class="col-sm-9 content-left">
 
                 <router-view></router-view>
 
@@ -39,6 +33,10 @@
         components: {
             sidebar: Sidebar,
             modal: Modal
+        },
+        ready: function () {
+            // Initialize Bootstrap tooltips
+            $('#app').tooltip({selector: '[data-toggle="tooltip"]'});
         },
         events: {
             'modal-open': function(view, data = {}, size = '') {

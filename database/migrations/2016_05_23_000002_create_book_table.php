@@ -16,6 +16,8 @@ class CreateBookTable extends Migration
             $table->increments('id');
 
             $table->string('name')->unique();
+            $table->integer('grade')->default(4);
+            $table->boolean('legendary')->default(false);
 
             $table->integer('attribute_id')->unsigned()->index();
             $table->foreign('attribute_id')->references('id')->on('attributes');

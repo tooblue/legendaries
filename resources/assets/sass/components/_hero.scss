@@ -1,0 +1,89 @@
+.user-hero {
+    display: inline-block;
+    width: 23%;
+    font-size: 9px;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 16px;
+    position: relative;
+    border: 2px solid #eee;
+    & > div {
+        margin-left: 10px;
+        margin-top: 18px;
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+    }
+    & > div:first-of-type {
+        width: 37%;
+        margin: 0;
+    }
+    &.fire {
+        color: #4C0000;
+        border-color: #E47C7C;
+        &:hover {
+            background-color: #FFD1D1;
+        }
+    }
+    &.earth {
+        color: #0C4C00;
+        border-color: #8CE47C;
+        &:hover {
+            background-color: #D8FFD1;
+        }
+    }
+    &.water {
+        color: #003A4C;
+        border-color: #7CCCE4;
+        &:hover {
+            background-color: #D1FDFF;
+        }
+    }
+    &.light {
+        color: #4C3F00;
+        border-color: #E4CE7C;
+        &:hover {
+            background-color: #FFF7D1;
+        }
+    }
+    &.dark {
+        color: #1A004C;
+        border-color: #9F7CE4;
+        &:hover {
+            background-color: #F0E8FF;
+        }
+    }
+    .grade {
+        margin-top: -1px;
+        margin-bottom: 5px;
+        margin: -1px 0px 5px 3px;
+        display: block;
+        color: $dark-yellow;
+        &.legendary {
+            color: #FF6A00;
+        }
+    }
+    .user {
+        position: absolute;
+        top: 4px;
+        right: -3px;
+        background-color: $dark-yellow;
+        color: #fff;
+        letter-spacing: 1px;
+        padding: 2px 10px;
+        &::before {
+            z-index: 1;
+            content: " ";
+            border: 8px solid transparent;
+            height: 0;
+            width: 0;
+            left: -16px;
+            top: 0px;
+            position: absolute;
+            border-right-color: $dark-yellow;
+        }
+    }
+}

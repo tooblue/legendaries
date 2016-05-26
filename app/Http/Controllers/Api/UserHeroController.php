@@ -35,6 +35,7 @@ class UserHeroController extends Controller
             $book = Book::find($request->book_id);
 
             $hero = new Hero;
+            $hero->grade = $book->grade;
             $hero->user()->associate($user);
             $hero->book()->associate($book);
             $hero->save();

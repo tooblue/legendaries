@@ -8,13 +8,15 @@ $font-family-sans-serif: 'Lato', sans-serif;
  * Colors
 **/
 $primary-color: #212121;
+$yellow: #FFC800;
+$dark-yellow: #E8B600;
 
 $navbar-default-color: #fff;
 $navbar-default-link-color: #fff;
 $navbar-default-bg: $primary-color;
 $brand-primary: darken($primary-color, 6.5%);
 $btn-primary-bg: transparent;
-$btn-primary-color: $brand-primary;
+$btn-primary-color: $yellow;
 $btn-primary-border: $btn-primary-color;
 
 /**

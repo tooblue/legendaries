@@ -16,6 +16,8 @@ class CreateHeroesTable extends Migration
             $table->increments('id');
 
             $table->integer('lvl')->default(30);
+            $table->integer('grade')->default(4);
+            $table->integer('powerup_lvl')->default(0);
             $table->integer('atk')->default(0);
             $table->integer('def')->default(0);
             $table->integer('hp')->default(0);

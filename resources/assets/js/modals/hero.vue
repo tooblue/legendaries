@@ -13,26 +13,32 @@
                 <div class="col-sm-6">
                     <div class="form-group">
                         <div class="input-group">
+                            <span class="input-group-addon">LVL</span>
+                            <input type="text" class="form-control" placeholder="30" v-model="hero.lvl" number>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
                             <span class="input-group-addon">ATK</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.atk" number>
+                            <input type="text" class="form-control" placeholder="1000" v-model="hero.atk" number>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">DEF</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.def" number>
+                            <input type="text" class="form-control" placeholder="1000" v-model="hero.def" number>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">HP&nbsp;</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.hp" number>
+                            <input type="text" class="form-control" placeholder="1000" v-model="hero.hp" number>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">SPD</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.spd" number>
+                            <input type="text" class="form-control" placeholder="300" v-model="hero.spd" number>
                         </div>
                     </div>
                 </div><!-- /col -->
@@ -41,7 +47,7 @@
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">CR&nbsp;</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.cr | percent" number>
+                            <input type="text" class="form-control" placeholder="10" v-model="hero.cr | percent" number>
                             <span class="input-group-addon">%</span>
                         </div>
                     </div>
@@ -55,21 +61,21 @@
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">PEN</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.pen | percent" number>
+                            <input type="text" class="form-control" placeholder="0" v-model="hero.pen | percent" number>
                             <span class="input-group-addon">%</span>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">ACC</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.acc | percent" number>
+                            <input type="text" class="form-control" placeholder="0" v-model="hero.acc | percent" number>
                             <span class="input-group-addon">%</span>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">EVA</span>
-                            <input type="text" class="form-control" placeholder="100" v-model="hero.eva | percent" number>
+                            <input type="text" class="form-control" placeholder="10" v-model="hero.eva | percent" number>
                             <span class="input-group-addon">%</span>
                         </div>
                     </div>
@@ -82,7 +88,6 @@
 
     <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" v-on:click="updateHero">Save changes</button>
     </div>
 
 </template>
@@ -100,12 +105,17 @@
               required: true
             }
         },
-        data : function() {
+        data: function() {
             return {
                 resource: {
                     heroes: this.$resource('//' + session.api + '/heroes{/id}',{},{},{ xhr: { withCredentials: true } })
                 },
                 hero: {}
+            }
+        },
+        watch: {
+            'data': function () {
+                this.getHero();
             }
         },
         ready: function() {
@@ -120,16 +130,7 @@
                     }, function (response) {
                         console.log('error: ', response);
                     });
-            },
-            updateHero: function() {
-                this.resource.heroes
-                    .save({id:this.data.hero_id},hero).then(function (response) {
-                        this.heroes.push(response.data);
-                        this.progress.done();
-                    }, function (response) {
-                        console.log('error: ', response);
-                    });
-            },
+            }
         }
     }
 </script>

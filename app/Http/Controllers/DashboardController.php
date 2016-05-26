@@ -25,7 +25,10 @@ class DashboardController extends Controller
                 'discord' => $this->member
             ],
             'userAvatar' => 'https://cdn.discordapp.com/avatars/' . Auth::user()->discord_id . '/' . $this->member->user->avatar . '.jpg',
-            'roles' => $this->guild->roles(),
+            'guild' => [
+                'roles' => $this->guild->roles(),
+                'members' => $this->guild->members(),
+            ],
             'api' => 'api.' . env('APP_DOMAIN'),
             'token' => csrf_token()
         ];

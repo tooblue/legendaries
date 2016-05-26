@@ -12,6 +12,7 @@
 
 <script>
     var Hero = require('./hero.vue');
+    var HeroEdit = require('./hero-edit.vue');
 
     module.exports = {
         data : function() {
@@ -22,7 +23,8 @@
             }
         },
         components: {
-            hero: Hero
+            hero: Hero,
+            'hero-edit': HeroEdit
         },
         methods: {
             setSize: function (size) {

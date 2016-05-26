@@ -28,11 +28,11 @@ Route::group(['middleware' => ['web','auth','api','cors'], 'domain' => 'api.' . 
     Route::get('guild/members', 'GuildController@members');
     Route::resource('guild', 'GuildController', ['only' => ['index']]);
 
-    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index', 'store']], [
+    Route::resource('users.heroes', 'UserHeroController', ['only' => ['index','store']], [
         'parameters' => 'singular'
     ]);
 
-    Route::resource('heroes', 'HeroController', ['only' => ['index','show', 'store']]);
+    Route::resource('heroes', 'HeroController', ['only' => ['index','show','update']]);
 
     Route::resource('users', 'UserController', ['only' => ['index','show']]);
 

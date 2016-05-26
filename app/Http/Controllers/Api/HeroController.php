@@ -27,7 +27,7 @@ class HeroController extends Controller
         return response()->json( $this->heroes::with('book','tags','user')->find($id) );
     }
 
-    public function store(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $hero = Hero::with('user')->find($id);
 

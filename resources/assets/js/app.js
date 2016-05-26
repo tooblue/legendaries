@@ -18,6 +18,7 @@ Vue.use(require('vue-resource'));
 */
 var App = require('./app.vue'); // base view
 var Dashboard = require('./views/dashboard.vue');
+var GuildHeroes = require('./views/guild-heroes.vue');
 var Calculator = require('./views/calculator.vue');
 
 /*
@@ -29,6 +30,10 @@ router.map({
     '/': {
         name: 'dashboard',
         component: Dashboard
+    },
+    '/guild-heroes': {
+        name: 'guild-heroes',
+        component: GuildHeroes
     },
     '/calc': {
         name: 'calculator',
