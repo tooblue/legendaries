@@ -41,6 +41,12 @@
         events: {
             'modal-open': function(view, data = {}, size = '') {
                 this.$broadcast('modal-open-global', view, data, size)
+            },
+            'hero-update': function(hero_id, hero) {
+                this.$broadcast('hero-update-global', hero_id, hero)
+            },
+            'hero-delete': function(hero_id) {
+                this.$broadcast('hero-delete-global', hero_id)
             }
         }
     }

@@ -19,6 +19,12 @@
                     </div>
                     <div class="form-group">
                         <div class="input-group">
+                            <span class="input-group-addon">+</span>
+                            <input type="text" class="form-control" placeholder="5" v-model="hero.powerup_lvl" number>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
                             <span class="input-group-addon">ATK</span>
                             <input type="text" class="form-control" placeholder="1000" v-model="hero.atk" number>
                         </div>
@@ -44,6 +50,17 @@
                 </div><!-- /col -->
 
                 <div class="col-sm-6">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">Grade</span>
+                            <input type="text" class="form-control" placeholder="30" v-model="hero.grade" number>
+                            <span class="input-group-addon">
+                                <span v-bind:class="{ 'grade': true, 'legendary': hero.book.legendary }">
+                                    <i v-for="n in hero.grade" class="fa fa-star"></i>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon">CR&nbsp;</span>
@@ -87,7 +104,7 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger pull-left" v-on:click="deleteHero"><i class="fa fa-trash-o"></i></button>
         <button type="button" class="btn btn-primary" v-on:click="updateHero">Save changes</button>
     </div>
 
@@ -108,6 +125,7 @@
         },
         data: function() {
             return {
+                session: session,
                 resource: {
                     heroes: this.$resource('//' + session.api + '/heroes{/id}',{},{},{ xhr: { withCredentials: true } })
                 },
@@ -119,7 +137,7 @@
                 this.getHero();
             }
         },
-        ready: function() {
+        ready: function () {
             this.getHero();
         },
         methods: {
@@ -134,9 +152,32 @@
             },
             updateHero: function() {
                 this.resource.heroes
-                    .update({id:this.data.hero_id},this.hero).then(function (response) {
-                        this.heroes.push(response.data);
-                        this.progress.done();
+                    .update({id:this.data.hero_id},{
+                        lvl: this.hero.lvl,
+                        powerup_lvl: this.hero.powerup_lvl,
+                        grade: this.hero.grade,
+                        atk: this.hero.atk,
+                        def: this.hero.def,
+                        hp: this.hero.hp,
+                        spd: this.hero.spd,
+                        cr: this.hero.cr,
+                        cd: this.hero.cd,
+                        pen: this.hero.pen,
+                        acc: this.hero.acc,
+                        eva: this.hero.eva,
+                        _token: this.session.token
+                    }).then(function (response) {
+                        this.$dispatch('hero-update', this.data.hero_id, this.hero);
+                        $('#modal').modal('hide');
+                    }, function (response) {
+                        console.log('error: ', response);
+                    });
+            },
+            deleteHero: function() {
+                this.resource.heroes
+                    .delete({id:this.data.hero_id},{_token: this.session.token}).then(function (response) {
+                        this.$dispatch('hero-delete', this.data.hero_id);
+                        $('#modal').modal('hide');
                     }, function (response) {
                         console.log('error: ', response);
                     });

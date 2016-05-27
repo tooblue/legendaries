@@ -36,6 +36,10 @@ class UserHeroController extends Controller
 
             $hero = new Hero;
             $hero->grade = $book->grade;
+            $hero->atk = $book->atk;
+            $hero->def = $book->def;
+            $hero->hp = $book->hp;
+            $hero->spd = $book->spd;
             $hero->user()->associate($user);
             $hero->book()->associate($book);
             $hero->save();

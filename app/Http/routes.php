@@ -32,7 +32,7 @@ Route::group(['middleware' => ['web','auth','api','cors'], 'domain' => 'api.' . 
         'parameters' => 'singular'
     ]);
 
-    Route::resource('heroes', 'HeroController', ['only' => ['index','show','update']]);
+    Route::resource('heroes', 'HeroController', ['only' => ['index','show','update','destroy']]);
 
     Route::resource('users', 'UserController', ['only' => ['index','show']]);
 

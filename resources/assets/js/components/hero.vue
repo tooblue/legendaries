@@ -61,6 +61,16 @@
             return {
                 session: session
             }
+        },
+        events: {
+            'hero-update-global': function(hero_id, hero) {
+                if ( this.hero.id == hero_id )
+                    this.$set('hero', hero);
+            },
+            'hero-delete-global': function(hero_id) {
+                if ( this.hero.id == hero_id )
+                    this.$remove();
+            }
         }
     }
 </script>
