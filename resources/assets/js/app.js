@@ -3,6 +3,8 @@
 */
 window.$ = window.jQuery = require('jquery')
 require('bootstrap-sass');
+window.Spinner = require('spin.js');
+window.moment = require('moment'); moment.locale('cs'); // Moment.js
 
 var Vue = require('vue');
 var VueRouter = require('vue-router');

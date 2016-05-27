@@ -118,7 +118,7 @@
                 this.getHero();
             }
         },
-        ready: function() {
+        ready: function () {
             this.getHero();
         },
         methods: {
@@ -127,6 +127,7 @@
                     .get({id:this.data.hero_id}).then(function (response) {
                         if ( Object.keys(response.data).length !== 0 )
                             this.$set('hero', response.data);
+                            this.$parent.loading = false;
                     }, function (response) {
                         console.log('error: ', response);
                     });

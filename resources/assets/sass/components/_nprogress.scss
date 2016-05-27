@@ -1,7 +1,8 @@
 @import "node_modules/nprogress/nprogress";
+
 #nprogress {
     .bar {
-        background: lighten($primary-color, 20%);
+        background: lighten($yellow, 20%);
     }
     .peg {
         box-shadow: 0 0 10px #fff, 0 0 5px #fff;

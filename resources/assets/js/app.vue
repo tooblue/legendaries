@@ -36,7 +36,7 @@
         },
         ready: function () {
             // Initialize Bootstrap tooltips
-            $('#app').tooltip({selector: '[data-toggle="tooltip"]'});
+            $('#app').tooltip({selector: '[data-toggle="tooltip"]', container: 'body'});
         },
         events: {
             'modal-open': function(view, data = {}, size = '') {

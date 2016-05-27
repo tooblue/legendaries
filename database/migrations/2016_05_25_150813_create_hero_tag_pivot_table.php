@@ -13,6 +13,7 @@ class CreateHeroTagPivotTable extends Migration
     public function up()
     {
         Schema::create('hero_tag', function (Blueprint $table) {
+            $table->string('alias')->nullable();
             $table->integer('hero_id')->unsigned()->index();
             $table->foreign('hero_id')->references('id')->on('heroes')->onDelete('cascade');
             $table->integer('tag_id')->unsigned()->index();

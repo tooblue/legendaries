@@ -1,7 +1,9 @@
 <template>
 
     <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modal-label">
-        <div class="modal-dialog {{ size }}" role="document">
+        <div v-show="loading"><spinner></spinner></div>
+
+        <div v-show="!loading" class="modal-dialog {{ size }}" role="document">
             <div class="modal-content">
                 <component :is="view" :data="data"></component>
             </div>
@@ -11,6 +13,8 @@
 </template>
 
 <script>
+    var Spinner = require('../components/spinner.vue');
+
     var Hero = require('./hero.vue');
     var HeroEdit = require('./hero-edit.vue');
 
@@ -19,10 +23,12 @@
             return {
                 view: '',
                 size: '',
-                data: {}
+                data: {},
+                loading: true
             }
         },
         components: {
+            spinner: Spinner,
             hero: Hero,
             'hero-edit': HeroEdit
         },
@@ -35,6 +41,8 @@
         },
         events: {
             'modal-open-global': function(view, data = {}, size = '') {
+                this.loading = true;
+                this.$set('view', '');
                 this.$set('view', view);
                 this.$set('data', data);
                 this.setSize(size);

@@ -104,23 +104,36 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-danger pull-left" v-on:click="deleteHero"><i class="fa fa-trash-o"></i></button>
-        <button type="button" class="btn btn-primary" v-on:click="updateHero">Save changes</button>
+        <button type="button" class="btn btn-danger pull-left"
+            v-on:click="deleteHero"
+            :disabled="deleting ? true : null"
+            data-toggle="tooltip" data-placement="top" title="Delete Hero">
+                <i v-show="!deleting" class="fa fa-trash-o"></i>
+                <span v-show="deleting"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
+        </button>
+        <button type="button" class="btn btn-primary" v-on:click="updateHero" :disabled="updating ? true : null">
+            <span v-show="!updating">Save changes</span>
+            <span v-show="updating"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>
+        </button>
     </div>
 
 </template>
 
 <script>
+    var Spinner = require('../components/spinner.vue');
     var Percent = require('../filters/percent.vue');
 
     module.exports = {
         filters: {
             percent: Percent
         },
+        components: {
+            spinner: Spinner
+        },
         props: {
             data: {
               type: Object,
-              required: true
+              required: true,
             }
         },
         data: function() {
@@ -129,28 +142,37 @@
                 resource: {
                     heroes: this.$resource('//' + session.api + '/heroes{/id}',{},{},{ xhr: { withCredentials: true } })
                 },
-                hero: {}
+                hero: {},
+                deleting: false,
+                updating: false,
             }
         },
         watch: {
             'data': function () {
-                this.getHero();
+                this.reset();
             }
         },
         ready: function () {
             this.getHero();
         },
         methods: {
-            getHero: function() {
+            reset: function () {
+                this.deleting = false;
+                this.updating = false;
+                this.getHero();
+            },
+            getHero: function () {
                 this.resource.heroes
                     .get({id:this.data.hero_id}).then(function (response) {
                         if ( Object.keys(response.data).length !== 0 )
                             this.$set('hero', response.data);
+                            this.$parent.loading = false;
                     }, function (response) {
                         console.log('error: ', response);
                     });
             },
-            updateHero: function() {
+            updateHero: function () {
+                this.updating = true;
                 this.resource.heroes
                     .update({id:this.data.hero_id},{
                         lvl: this.hero.lvl,
@@ -173,7 +195,8 @@
                         console.log('error: ', response);
                     });
             },
-            deleteHero: function() {
+            deleteHero: function () {
+                this.deleting = true;
                 this.resource.heroes
                     .delete({id:this.data.hero_id},{_token: this.session.token}).then(function (response) {
                         this.$dispatch('hero-delete', this.data.hero_id);

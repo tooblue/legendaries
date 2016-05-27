@@ -5827,7 +5827,7 @@ button.close {
     transform: rotate(360deg); } }
 
 #nprogress .bar {
-  background: #545454; }
+  background: #ffde66; }
 
 #nprogress .peg {
   box-shadow: 0 0 10px #fff, 0 0 5px #fff; }
@@ -5987,9 +5987,10 @@ button.close {
   width: 23%;
   font-size: 9px;
   padding: 8px;
+  padding-bottom: 10px;
   cursor: pointer;
   border-radius: 5px;
-  margin-right: 16px;
+  margin: 0px 0px 8px 16px;
   position: relative;
   border: 2px solid #eee; }
   .user-hero > div {
@@ -6053,6 +6054,22 @@ button.close {
       top: 0px;
       position: absolute;
       border-right-color: #E8B600; }
+  .user-hero .tags {
+    position: absolute;
+    bottom: -7px;
+    right: 5px; }
+    .user-hero .tags > div {
+      color: #fff;
+      font-size: 8px;
+      font-weight: 700;
+      line-height: 15px;
+      text-align: center;
+      border-radius: 5px;
+      padding: 0;
+      margin-left: 1px;
+      width: 16px;
+      height: 15px;
+      display: inline-block; }
 
 /* Layout */
 #main {

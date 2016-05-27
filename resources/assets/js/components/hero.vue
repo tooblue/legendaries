@@ -29,6 +29,14 @@
                 <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>
             </ul>
         </div>
+        <div class="tags">
+            <template v-for="tag in hero.tags">
+                <div v-bind:style="{ backgroundColor: '#' + tag.color }"
+                    data-toggle="tooltip" data-placement="bottom" title="{{ tag.name }}">
+                    {{ tag.short_name }}
+                </div>
+            </template>
+        </div>
     </div>
 </template>
 

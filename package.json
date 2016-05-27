@@ -5,12 +5,13 @@
     "node-sass": "^3.4.2"
   },
   "dependencies": {
-    "laravel-elixir": "^5.0.0",
     "bootstrap-sass": "^3.0.0",
     "jquery": "^2.1.4",
     "laravel-elixir": "^4.0.0",
     "laravel-elixir-vueify": "^1.0.0",
+    "moment": "^2.13.0",
     "nprogress": "^0.2.0",
+    "spin.js": "^2.3.2",
     "vue-resource": "^0.6.1",
     "vue-router": "^0.7.8"
   }
