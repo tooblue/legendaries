@@ -30,7 +30,7 @@ class HeroesTableSeeder extends Seeder
         $hero = new Hero;
         $user = App\User::where('discord_id', '172113073514086401')->first();
         $book = App\Book::where('name', 'Fire Dragon')->first();
-        $tag = App\Tag::where('name', 'Arena')->first();
+        $tag = App\Tag::where('name', 'Glory Battlefield')->first();
 
         $hero->user()->associate($user);
         $hero->book()->associate($book);

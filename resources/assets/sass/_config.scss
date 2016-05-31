@@ -1,22 +1,25 @@
 /**
  * Fonts
 **/
-@import url(https://fonts.googleapis.com/css?family=Lato);
+@import url(https://fonts.googleapis.com/css?family=Lato:400,300,100);
 $font-family-sans-serif: 'Lato', sans-serif;
 
 /**
  * Colors
 **/
-$primary-color: #212121;
 $yellow: #FFC800;
 $dark-yellow: #E8B600;
+$blue: #29B6F6;
+
+$primary-color: #000;
+$accent-color: $blue;
 
 $navbar-default-color: #fff;
 $navbar-default-link-color: #fff;
 $navbar-default-bg: $primary-color;
 $brand-primary: darken($primary-color, 6.5%);
 $btn-primary-bg: transparent;
-$btn-primary-color: $yellow;
+$btn-primary-color: $accent-color;
 $btn-primary-border: $btn-primary-color;
 
 /**

@@ -2,7 +2,7 @@
 
 #nprogress {
     .bar {
-        background: lighten($yellow, 20%);
+        background: lighten($accent-color, 10);
     }
     .peg {
         box-shadow: 0 0 10px #fff, 0 0 5px #fff;

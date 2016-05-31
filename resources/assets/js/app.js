@@ -6,6 +6,19 @@ require('bootstrap-sass');
 window.Spinner = require('spin.js');
 window.moment = require('moment'); moment.locale('cs'); // Moment.js
 
+var nprogress = require('nprogress');
+window.progress = {
+    bar: nprogress.configure({ parent: '#app' }),
+    load: 0,
+    total: 0,
+}
+
+window.modalProgress = {
+    bar: nprogress.configure({ parent: '#app' }),
+    load: 0,
+    total: 0,
+}
+
 var Vue = require('vue');
 var VueRouter = require('vue-router');
 
@@ -20,8 +33,8 @@ Vue.use(require('vue-resource'));
 */
 var App = require('./app.vue'); // base view
 var Dashboard = require('./views/dashboard.vue');
-var GuildHeroes = require('./views/guild-heroes.vue');
-var Calculator = require('./views/calculator.vue');
+var GuildHeroes = require('./views/guild/heroes.vue');
+var GuildMembers = require('./views/guild/members.vue');
 
 /*
     Vue routes
@@ -33,13 +46,13 @@ router.map({
         name: 'dashboard',
         component: Dashboard
     },
+    '/guild-members': {
+        name: 'guild-members',
+        component: GuildMembers
+    },
     '/guild-heroes': {
         name: 'guild-heroes',
         component: GuildHeroes
-    },
-    '/calc': {
-        name: 'calculator',
-        component: Calculator
     }
 });
 

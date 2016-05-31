@@ -1,9 +1,9 @@
 #navbar-top {
     min-height: 150px;
     .navbar-brand {
-        color: $yellow;
+        color: $accent-color;
         span.logo {
-            color: #fff;
+            color: lighten($accent-color, 30);
             font-size: 10pt;
             margin-right: 5px;
         }
@@ -60,7 +60,7 @@
                 margin: 0px 15px 5px 15px;
                 border-bottom: 2px solid transparent;
                 &:hover, &:active {
-                    border-bottom: 2px solid #FFC800;
+                    border-bottom: 2px solid $accent-color;
                 }
             }
             &.btn {

@@ -1,6 +1,6 @@
 <template>
 
-    <h1>My Heroes</h1>
+    <h1>Guild Heroes</h1>
 
     <div v-if="progress.load"><!-- Loading -->
         <spinner :opts="{color:'#666',shadow:false}"></spinner>
@@ -13,57 +13,44 @@
             </div>
         </form>
 
-        <div class="user-hero add clearfix"
-            v-on:click="openModal('hero-add',{},'small')">
-            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        </div><!--
-
-        --><template v-if="heroes.length !== 0">
+        <template v-if="heroes.length !== 0">
             <template v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
-                <hero :hero.sync="hero" :edit="true" :show-user="false"></hero>
+                <hero :hero="hero"></hero>
             </template>
         </template>
-        <p v-else><em>You haven't saved any heroes! ):</em></p>
+        <p v-else><em>No heroes to display! ):</em></p>
 
     </template>
 
 </template>
 
 <script>
-    var View = require('./_view.vue');
-    var Modals = require('../mixins/modals.vue');
-    var Hero = require('../components/hero.vue');
+    var View = require('../_view.vue');
+    var Hero = require('../../components/hero.vue');
 
-    var UserHeroes = require('../resources/userHeroes.vue');
+    var Heroes = require('../../resources/heroes.vue');
 
     module.exports = {
         extends: View,
-        mixins: [UserHeroes,Modals],
+        mixins: [Heroes],
         components: {
             hero: Hero
         },
         data : function() {
             return {
-                heroes: [],
+                search: '',
+                heroes: []
             }
         },
         methods: {
             init: function () {
-                this.progress.load++;
-                this.userHeroesGet(function(response){
-                    this.progress.load--;
+                progress.load++;
+                this.heroesGet(function(response){
+                    progress.load--;
                     if ( Object.keys(response.data).length !== 0 )
                         this.$set('heroes', response.data);
                 });
-            },
-            reset: function () {
-                this.init();
             }
-        },
-        events: {
-            'hero-add-global': function(hero) {
-                this.heroes.push(hero);
-            },
         }
     }
 </script>

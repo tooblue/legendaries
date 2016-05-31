@@ -2367,18 +2367,52 @@ if (typeof jQuery === 'undefined') {
 
 },{}],3:[function(require,module,exports){
 require('../../modules/es6.object.keys');
-module.exports = require('../../modules/$.core').Object.keys;
-},{"../../modules/$.core":5,"../../modules/es6.object.keys":13}],4:[function(require,module,exports){
+module.exports = require('../../modules/_core').Object.keys;
+},{"../../modules/_core":8,"../../modules/es6.object.keys":36}],4:[function(require,module,exports){
 module.exports = function(it){
   if(typeof it != 'function')throw TypeError(it + ' is not a function!');
   return it;
 };
 },{}],5:[function(require,module,exports){
-var core = module.exports = {version: '1.2.6'};
+var isObject = require('./_is-object');
+module.exports = function(it){
+  if(!isObject(it))throw TypeError(it + ' is not an object!');
+  return it;
+};
+},{"./_is-object":21}],6:[function(require,module,exports){
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = require('./_to-iobject')
+  , toLength  = require('./_to-length')
+  , toIndex   = require('./_to-index');
+module.exports = function(IS_INCLUDES){
+  return function($this, el, fromIndex){
+    var O      = toIObject($this)
+      , length = toLength(O.length)
+      , index  = toIndex(fromIndex, length)
+      , value;
+    // Array#includes uses SameValueZero equality algorithm
+    if(IS_INCLUDES && el != el)while(length > index){
+      value = O[index++];
+      if(value != value)return true;
+    // Array#toIndex ignores holes, Array#includes - not
+    } else for(;length > index; index++)if(IS_INCLUDES || index in O){
+      if(O[index] === el)return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+},{"./_to-index":29,"./_to-iobject":31,"./_to-length":32}],7:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = function(it){
+  return toString.call(it).slice(8, -1);
+};
+},{}],8:[function(require,module,exports){
+var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 // optional / simple context binding
-var aFunction = require('./$.a-function');
+var aFunction = require('./_a-function');
 module.exports = function(fn, that, length){
   aFunction(fn);
   if(that === undefined)return fn;
@@ -2397,16 +2431,35 @@ module.exports = function(fn, that, length){
     return fn.apply(that, arguments);
   };
 };
-},{"./$.a-function":4}],7:[function(require,module,exports){
+},{"./_a-function":4}],10:[function(require,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function(it){
   if(it == undefined)throw TypeError("Can't call method on  " + it);
   return it;
 };
-},{}],8:[function(require,module,exports){
-var global    = require('./$.global')
-  , core      = require('./$.core')
-  , ctx       = require('./$.ctx')
+},{}],11:[function(require,module,exports){
+// Thank's IE8 for his funny defineProperty
+module.exports = !require('./_fails')(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+});
+},{"./_fails":15}],12:[function(require,module,exports){
+var isObject = require('./_is-object')
+  , document = require('./_global').document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
+  return is ? document.createElement(it) : {};
+};
+},{"./_global":16,"./_is-object":21}],13:[function(require,module,exports){
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+},{}],14:[function(require,module,exports){
+var global    = require('./_global')
+  , core      = require('./_core')
+  , ctx       = require('./_ctx')
+  , hide      = require('./_hide')
   , PROTOTYPE = 'prototype';
 
 var $export = function(type, name, source){
@@ -2417,12 +2470,13 @@ var $export = function(type, name, source){
     , IS_BIND   = type & $export.B
     , IS_WRAP   = type & $export.W
     , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE]
     , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
     , key, own, out;
   if(IS_GLOBAL)source = name;
   for(key in source){
     // contains in native
-    own = !IS_FORCED && target && key in target;
+    own = !IS_FORCED && target && target[key] !== undefined;
     if(own && key in exports)continue;
     // export native or passed
     out = own ? target[key] : source[key];
@@ -2432,25 +2486,38 @@ var $export = function(type, name, source){
     : IS_BIND && own ? ctx(out, global)
     // wrap global constructors for prevent change them in library
     : IS_WRAP && target[key] == out ? (function(C){
-      var F = function(param){
-        return this instanceof C ? new C(param) : C(param);
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
       };
       F[PROTOTYPE] = C[PROTOTYPE];
       return F;
     // make static versions for prototype methods
     })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    if(IS_PROTO)(exports[PROTOTYPE] || (exports[PROTOTYPE] = {}))[key] = out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if(IS_PROTO){
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
+    }
   }
 };
 // type bitmap
-$export.F = 1;  // forced
-$export.G = 2;  // global
-$export.S = 4;  // static
-$export.P = 8;  // proto
-$export.B = 16; // bind
-$export.W = 32; // wrap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library` 
 module.exports = $export;
-},{"./$.core":5,"./$.ctx":6,"./$.global":10}],9:[function(require,module,exports){
+},{"./_core":8,"./_ctx":9,"./_global":16,"./_hide":18}],15:[function(require,module,exports){
 module.exports = function(exec){
   try {
     return !!exec();
@@ -2458,40 +2525,182 @@ module.exports = function(exec){
     return true;
   }
 };
-},{}],10:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
 if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-},{}],11:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function(it, key){
+  return hasOwnProperty.call(it, key);
+};
+},{}],18:[function(require,module,exports){
+var dP         = require('./_object-dp')
+  , createDesc = require('./_property-desc');
+module.exports = require('./_descriptors') ? function(object, key, value){
+  return dP.f(object, key, createDesc(1, value));
+} : function(object, key, value){
+  object[key] = value;
+  return object;
+};
+},{"./_descriptors":11,"./_object-dp":22,"./_property-desc":26}],19:[function(require,module,exports){
+module.exports = !require('./_descriptors') && !require('./_fails')(function(){
+  return Object.defineProperty(require('./_dom-create')('div'), 'a', {get: function(){ return 7; }}).a != 7;
+});
+},{"./_descriptors":11,"./_dom-create":12,"./_fails":15}],20:[function(require,module,exports){
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = require('./_cof');
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+},{"./_cof":7}],21:[function(require,module,exports){
+module.exports = function(it){
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+},{}],22:[function(require,module,exports){
+var anObject       = require('./_an-object')
+  , IE8_DOM_DEFINE = require('./_ie8-dom-define')
+  , toPrimitive    = require('./_to-primitive')
+  , dP             = Object.defineProperty;
+
+exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes){
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if(IE8_DOM_DEFINE)try {
+    return dP(O, P, Attributes);
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
+  return O;
+};
+},{"./_an-object":5,"./_descriptors":11,"./_ie8-dom-define":19,"./_to-primitive":34}],23:[function(require,module,exports){
+var has          = require('./_has')
+  , toIObject    = require('./_to-iobject')
+  , arrayIndexOf = require('./_array-includes')(false)
+  , IE_PROTO     = require('./_shared-key')('IE_PROTO');
+
+module.exports = function(object, names){
+  var O      = toIObject(object)
+    , i      = 0
+    , result = []
+    , key;
+  for(key in O)if(key != IE_PROTO)has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while(names.length > i)if(has(O, key = names[i++])){
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+},{"./_array-includes":6,"./_has":17,"./_shared-key":27,"./_to-iobject":31}],24:[function(require,module,exports){
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys       = require('./_object-keys-internal')
+  , enumBugKeys = require('./_enum-bug-keys');
+
+module.exports = Object.keys || function keys(O){
+  return $keys(O, enumBugKeys);
+};
+},{"./_enum-bug-keys":13,"./_object-keys-internal":23}],25:[function(require,module,exports){
 // most Object methods by ES6 should accept primitives
-var $export = require('./$.export')
-  , core    = require('./$.core')
-  , fails   = require('./$.fails');
+var $export = require('./_export')
+  , core    = require('./_core')
+  , fails   = require('./_fails');
 module.exports = function(KEY, exec){
   var fn  = (core.Object || {})[KEY] || Object[KEY]
     , exp = {};
   exp[KEY] = exec(fn);
   $export($export.S + $export.F * fails(function(){ fn(1); }), 'Object', exp);
 };
-},{"./$.core":5,"./$.export":8,"./$.fails":9}],12:[function(require,module,exports){
+},{"./_core":8,"./_export":14,"./_fails":15}],26:[function(require,module,exports){
+module.exports = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+},{}],27:[function(require,module,exports){
+var shared = require('./_shared')('keys')
+  , uid    = require('./_uid');
+module.exports = function(key){
+  return shared[key] || (shared[key] = uid(key));
+};
+},{"./_shared":28,"./_uid":35}],28:[function(require,module,exports){
+var global = require('./_global')
+  , SHARED = '__core-js_shared__'
+  , store  = global[SHARED] || (global[SHARED] = {});
+module.exports = function(key){
+  return store[key] || (store[key] = {});
+};
+},{"./_global":16}],29:[function(require,module,exports){
+var toInteger = require('./_to-integer')
+  , max       = Math.max
+  , min       = Math.min;
+module.exports = function(index, length){
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+},{"./_to-integer":30}],30:[function(require,module,exports){
+// 7.1.4 ToInteger
+var ceil  = Math.ceil
+  , floor = Math.floor;
+module.exports = function(it){
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+},{}],31:[function(require,module,exports){
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+var IObject = require('./_iobject')
+  , defined = require('./_defined');
+module.exports = function(it){
+  return IObject(defined(it));
+};
+},{"./_defined":10,"./_iobject":20}],32:[function(require,module,exports){
+// 7.1.15 ToLength
+var toInteger = require('./_to-integer')
+  , min       = Math.min;
+module.exports = function(it){
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+},{"./_to-integer":30}],33:[function(require,module,exports){
 // 7.1.13 ToObject(argument)
-var defined = require('./$.defined');
+var defined = require('./_defined');
 module.exports = function(it){
   return Object(defined(it));
 };
-},{"./$.defined":7}],13:[function(require,module,exports){
+},{"./_defined":10}],34:[function(require,module,exports){
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = require('./_is-object');
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function(it, S){
+  if(!isObject(it))return it;
+  var fn, val;
+  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+},{"./_is-object":21}],35:[function(require,module,exports){
+var id = 0
+  , px = Math.random();
+module.exports = function(key){
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+},{}],36:[function(require,module,exports){
 // 19.1.2.14 Object.keys(O)
-var toObject = require('./$.to-object');
+var toObject = require('./_to-object')
+  , $keys    = require('./_object-keys');
 
-require('./$.object-sap')('keys', function($keys){
+require('./_object-sap')('keys', function(){
   return function keys(it){
     return $keys(toObject(it));
   };
 });
-},{"./$.object-sap":11,"./$.to-object":12}],14:[function(require,module,exports){
+},{"./_object-keys":24,"./_object-sap":25,"./_to-object":33}],37:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v2.2.3
+ * jQuery JavaScript Library v2.2.4
  * http://jquery.com/
  *
  * Includes Sizzle.js
@@ -2501,7 +2710,7 @@ require('./$.object-sap')('keys', function($keys){
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2016-04-05T19:26Z
+ * Date: 2016-05-20T17:23Z
  */
 
 (function( global, factory ) {
@@ -2557,7 +2766,7 @@ var support = {};
 
 
 var
-	version = "2.2.3",
+	version = "2.2.4",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -7498,13 +7707,14 @@ jQuery.Event.prototype = {
 	isDefaultPrevented: returnFalse,
 	isPropagationStopped: returnFalse,
 	isImmediatePropagationStopped: returnFalse,
+	isSimulated: false,
 
 	preventDefault: function() {
 		var e = this.originalEvent;
 
 		this.isDefaultPrevented = returnTrue;
 
-		if ( e ) {
+		if ( e && !this.isSimulated ) {
 			e.preventDefault();
 		}
 	},
@@ -7513,7 +7723,7 @@ jQuery.Event.prototype = {
 
 		this.isPropagationStopped = returnTrue;
 
-		if ( e ) {
+		if ( e && !this.isSimulated ) {
 			e.stopPropagation();
 		}
 	},
@@ -7522,7 +7732,7 @@ jQuery.Event.prototype = {
 
 		this.isImmediatePropagationStopped = returnTrue;
 
-		if ( e ) {
+		if ( e && !this.isSimulated ) {
 			e.stopImmediatePropagation();
 		}
 
@@ -8452,19 +8662,6 @@ function getWidthOrHeight( elem, name, extra ) {
 		val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 		styles = getStyles( elem ),
 		isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
-
-	// Support: IE11 only
-	// In IE 11 fullscreen elements inside of an iframe have
-	// 100x too small dimensions (gh-1764).
-	if ( document.msFullscreenElement && window.top !== window ) {
-
-		// Support: IE11 only
-		// Running getBoundingClientRect on a disconnected node
-		// in IE throws an error.
-		if ( elem.getClientRects().length ) {
-			val = Math.round( elem.getBoundingClientRect()[ name ] * 100 );
-		}
-	}
 
 	// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 	// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -10356,6 +10553,7 @@ jQuery.extend( jQuery.event, {
 	},
 
 	// Piggyback on a donor event to simulate a different one
+	// Used only for `focus(in | out)` events
 	simulate: function( type, elem, event ) {
 		var e = jQuery.extend(
 			new jQuery.Event(),
@@ -10363,27 +10561,10 @@ jQuery.extend( jQuery.event, {
 			{
 				type: type,
 				isSimulated: true
-
-				// Previously, `originalEvent: {}` was set here, so stopPropagation call
-				// would not be triggered on donor event, since in our own
-				// jQuery.event.stopPropagation function we had a check for existence of
-				// originalEvent.stopPropagation method, so, consequently it would be a noop.
-				//
-				// But now, this "simulate" function is used only for events
-				// for which stopPropagation() is noop, so there is no need for that anymore.
-				//
-				// For the 1.x branch though, guard for "click" and "submit"
-				// events is still used, but was moved to jQuery.event.stopPropagation function
-				// because `originalEvent` should point to the original event for the constancy
-				// with other events and for more focused logic
 			}
 		);
 
 		jQuery.event.trigger( e, null, elem );
-
-		if ( e.isDefaultPrevented() ) {
-			event.preventDefault();
-		}
 	}
 
 } );
@@ -12333,7 +12514,7 @@ if ( !noGlobal ) {
 return jQuery;
 }));
 
-},{}],15:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 //! moment.js
 //! version : 2.13.0
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -16374,7 +16555,7 @@ return jQuery;
     return _moment;
 
 }));
-},{}],16:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /* NProgress, (c) 2013, 2014 Rico Sta. Cruz - http://ricostacruz.com/nprogress
  * @license MIT */
 
@@ -16852,7 +17033,7 @@ return jQuery;
 });
 
 
-},{}],17:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -16862,6 +17043,9 @@ var currentQueue;
 var queueIndex = -1;
 
 function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
     draining = false;
     if (currentQueue.length) {
         queue = currentQueue.concat(queue);
@@ -16945,7 +17129,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],18:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /**
  * Copyright (c) 2011-2014 Felix Gnass
  * Licensed under the MIT license
@@ -17324,7 +17508,7 @@ process.umask = function() { return 0; };
 
 }));
 
-},{}],19:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 var Vue // late bind
 var map = Object.create(null)
 var shimmed = false
@@ -17624,7 +17808,7 @@ function format (id) {
   return id.match(/[^\/]+\.vue$/)[0]
 }
 
-},{}],20:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /**
  * Before Interceptor.
  */
@@ -17644,7 +17828,7 @@ module.exports = {
 
 };
 
-},{"../util":43}],21:[function(require,module,exports){
+},{"../util":66}],44:[function(require,module,exports){
 /**
  * Base client.
  */
@@ -17711,7 +17895,7 @@ function parseHeaders(str) {
     return headers;
 }
 
-},{"../../promise":36,"../../util":43,"./xhr":24}],22:[function(require,module,exports){
+},{"../../promise":59,"../../util":66,"./xhr":47}],45:[function(require,module,exports){
 /**
  * JSONP client.
  */
@@ -17761,7 +17945,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":36,"../../util":43}],23:[function(require,module,exports){
+},{"../../promise":59,"../../util":66}],46:[function(require,module,exports){
 /**
  * XDomain client (Internet Explorer).
  */
@@ -17800,7 +17984,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":36,"../../util":43}],24:[function(require,module,exports){
+},{"../../promise":59,"../../util":66}],47:[function(require,module,exports){
 /**
  * XMLHttp client.
  */
@@ -17845,7 +18029,7 @@ module.exports = function (request) {
     });
 };
 
-},{"../../promise":36,"../../util":43}],25:[function(require,module,exports){
+},{"../../promise":59,"../../util":66}],48:[function(require,module,exports){
 /**
  * CORS Interceptor.
  */
@@ -17884,7 +18068,7 @@ function crossOrigin(request) {
     return (requestUrl.protocol !== originUrl.protocol || requestUrl.host !== originUrl.host);
 }
 
-},{"../util":43,"./client/xdr":23}],26:[function(require,module,exports){
+},{"../util":66,"./client/xdr":46}],49:[function(require,module,exports){
 /**
  * Header Interceptor.
  */
@@ -17912,7 +18096,7 @@ module.exports = {
 
 };
 
-},{"../util":43}],27:[function(require,module,exports){
+},{"../util":66}],50:[function(require,module,exports){
 /**
  * Service for sending network requests.
  */
@@ -18011,7 +18195,7 @@ Http.headers = {
 
 module.exports = _.http = Http;
 
-},{"../promise":36,"../util":43,"./before":20,"./client":21,"./cors":25,"./header":26,"./interceptor":28,"./jsonp":29,"./method":30,"./mime":31,"./timeout":32}],28:[function(require,module,exports){
+},{"../promise":59,"../util":66,"./before":43,"./client":44,"./cors":48,"./header":49,"./interceptor":51,"./jsonp":52,"./method":53,"./mime":54,"./timeout":55}],51:[function(require,module,exports){
 /**
  * Interceptor factory.
  */
@@ -18058,7 +18242,7 @@ function when(value, fulfilled, rejected) {
     return promise.then(fulfilled, rejected);
 }
 
-},{"../promise":36,"../util":43}],29:[function(require,module,exports){
+},{"../promise":59,"../util":66}],52:[function(require,module,exports){
 /**
  * JSONP Interceptor.
  */
@@ -18078,7 +18262,7 @@ module.exports = {
 
 };
 
-},{"./client/jsonp":22}],30:[function(require,module,exports){
+},{"./client/jsonp":45}],53:[function(require,module,exports){
 /**
  * HTTP method override Interceptor.
  */
@@ -18097,7 +18281,7 @@ module.exports = {
 
 };
 
-},{}],31:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 /**
  * Mime Interceptor.
  */
@@ -18135,7 +18319,7 @@ module.exports = {
 
 };
 
-},{"../util":43}],32:[function(require,module,exports){
+},{"../util":66}],55:[function(require,module,exports){
 /**
  * Timeout Interceptor.
  */
@@ -18167,7 +18351,7 @@ module.exports = function () {
     };
 };
 
-},{}],33:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 /**
  * Install plugin.
  */
@@ -18222,7 +18406,7 @@ if (window.Vue) {
 
 module.exports = install;
 
-},{"./http":27,"./promise":36,"./resource":37,"./url":38,"./util":43}],34:[function(require,module,exports){
+},{"./http":50,"./promise":59,"./resource":60,"./url":61,"./util":66}],57:[function(require,module,exports){
 /**
  * Promises/A+ polyfill v1.1.4 (https://github.com/bramstein/promis)
  */
@@ -18403,7 +18587,7 @@ p.catch = function (onRejected) {
 
 module.exports = Promise;
 
-},{"../util":43}],35:[function(require,module,exports){
+},{"../util":66}],58:[function(require,module,exports){
 /**
  * URL Template v2.0.6 (https://github.com/bramstein/url-template)
  */
@@ -18555,7 +18739,7 @@ exports.encodeReserved = function (str) {
     }).join('');
 };
 
-},{}],36:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 /**
  * Promise adapter.
  */
@@ -18666,7 +18850,7 @@ p.always = function (callback) {
 
 module.exports = Promise;
 
-},{"./lib/promise":34,"./util":43}],37:[function(require,module,exports){
+},{"./lib/promise":57,"./util":66}],60:[function(require,module,exports){
 /**
  * Service for interacting with RESTful services.
  */
@@ -18778,7 +18962,7 @@ Resource.actions = {
 
 module.exports = _.resource = Resource;
 
-},{"./util":43}],38:[function(require,module,exports){
+},{"./util":66}],61:[function(require,module,exports){
 /**
  * Service for URL templating.
  */
@@ -18910,7 +19094,7 @@ function serialize(params, obj, scope) {
 
 module.exports = _.url = Url;
 
-},{"../util":43,"./legacy":39,"./query":40,"./root":41,"./template":42}],39:[function(require,module,exports){
+},{"../util":66,"./legacy":62,"./query":63,"./root":64,"./template":65}],62:[function(require,module,exports){
 /**
  * Legacy Transform.
  */
@@ -18958,7 +19142,7 @@ function encodeUriQuery(value, spaces) {
         replace(/%20/g, (spaces ? '%20' : '+'));
 }
 
-},{"../util":43}],40:[function(require,module,exports){
+},{"../util":66}],63:[function(require,module,exports){
 /**
  * Query Parameter Transform.
  */
@@ -18984,7 +19168,7 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":43}],41:[function(require,module,exports){
+},{"../util":66}],64:[function(require,module,exports){
 /**
  * Root Prefix Transform.
  */
@@ -19002,7 +19186,7 @@ module.exports = function (options, next) {
     return url;
 };
 
-},{"../util":43}],42:[function(require,module,exports){
+},{"../util":66}],65:[function(require,module,exports){
 /**
  * URL Template (RFC 6570) Transform.
  */
@@ -19020,7 +19204,7 @@ module.exports = function (options) {
     return url;
 };
 
-},{"../lib/url-template":35}],43:[function(require,module,exports){
+},{"../lib/url-template":58}],66:[function(require,module,exports){
 /**
  * Utility functions.
  */
@@ -19144,7 +19328,7 @@ function merge(target, source, deep) {
     }
 }
 
-},{}],44:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 /*!
  * vue-router v0.7.13
  * (c) 2016 Evan You
@@ -21854,10 +22038,10 @@ function merge(target, source, deep) {
   return Router;
 
 }));
-},{}],45:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 (function (process,global){
 /*!
- * Vue.js v1.0.21
+ * Vue.js v1.0.24
  * (c) 2016 Evan You
  * Released under the MIT License.
  */
@@ -21904,6 +22088,10 @@ function del(obj, key) {
   delete obj[key];
   var ob = obj.__ob__;
   if (!ob) {
+    if (obj._isVue) {
+      delete obj._data[key];
+      obj._digest();
+    }
     return;
   }
   ob.dep.notify();
@@ -22254,6 +22442,8 @@ var devtools = inBrowser && window.__VUE_DEVTOOLS_GLOBAL_HOOK__;
 var UA = inBrowser && window.navigator.userAgent.toLowerCase();
 var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
 var isAndroid = UA && UA.indexOf('android') > 0;
+var isIos = UA && /(iphone|ipad|ipod|ios)/i.test(UA);
+var isWechat = UA && UA.indexOf('micromessenger') > 0;
 
 var transitionProp = undefined;
 var transitionEndEvent = undefined;
@@ -22294,7 +22484,7 @@ var nextTick = (function () {
   }
 
   /* istanbul ignore if */
-  if (typeof MutationObserver !== 'undefined') {
+  if (typeof MutationObserver !== 'undefined' && !(isWechat && isIos)) {
     var counter = 1;
     var observer = new MutationObserver(nextTickHandler);
     var textNode = document.createTextNode(counter);
@@ -22322,6 +22512,27 @@ var nextTick = (function () {
     timerFunc(nextTickHandler, 0);
   };
 })();
+
+var _Set = undefined;
+/* istanbul ignore if */
+if (typeof Set !== 'undefined' && Set.toString().match(/native code/)) {
+  // use native Set when available.
+  _Set = Set;
+} else {
+  // a non-standard Set polyfill that only works with primitive keys.
+  _Set = function () {
+    this.set = Object.create(null);
+  };
+  _Set.prototype.has = function (key) {
+    return this.set[key] !== undefined;
+  };
+  _Set.prototype.add = function (key) {
+    this.set[key] = 1;
+  };
+  _Set.prototype.clear = function () {
+    this.set = Object.create(null);
+  };
+}
 
 function Cache(limit) {
   this.size = 0;
@@ -22967,8 +23178,9 @@ function query(el) {
  */
 
 function inDoc(node) {
-  var doc = document.documentElement;
-  var parent = node && node.parentNode;
+  if (!node) return false;
+  var doc = node.ownerDocument.documentElement;
+  var parent = node.parentNode;
   return doc === node || doc === parent || !!(parent && parent.nodeType === 1 && doc.contains(parent));
 }
 
@@ -23403,7 +23615,7 @@ function checkComponentAttr(el, options) {
     if (resolveAsset(options, 'components', tag)) {
       return { id: tag };
     } else {
-      var is = hasAttrs && getIsBinding(el);
+      var is = hasAttrs && getIsBinding(el, options);
       if (is) {
         return is;
       } else if (process.env.NODE_ENV !== 'production') {
@@ -23416,7 +23628,7 @@ function checkComponentAttr(el, options) {
       }
     }
   } else if (hasAttrs) {
-    return getIsBinding(el);
+    return getIsBinding(el, options);
   }
 }
 
@@ -23424,14 +23636,18 @@ function checkComponentAttr(el, options) {
  * Get "is" binding from an element.
  *
  * @param {Element} el
+ * @param {Object} options
  * @return {Object|undefined}
  */
 
-function getIsBinding(el) {
+function getIsBinding(el, options) {
   // dynamic syntax
-  var exp = getAttr(el, 'is');
+  var exp = el.getAttribute('is');
   if (exp != null) {
-    return { id: exp };
+    if (resolveAsset(options, 'components', exp)) {
+      el.removeAttribute('is');
+      return { id: exp };
+    }
   } else {
     exp = getBindAttr(el, 'is');
     if (exp != null) {
@@ -23542,7 +23758,7 @@ strats.init = strats.created = strats.ready = strats.attached = strats.detached 
  */
 
 function mergeAssets(parentVal, childVal) {
-  var res = Object.create(parentVal);
+  var res = Object.create(parentVal || null);
   return childVal ? extend(res, guardArrayAssets(childVal)) : res;
 }
 
@@ -23701,8 +23917,16 @@ function guardArrayAssets(assets) {
 function mergeOptions(parent, child, vm) {
   guardComponents(child);
   guardProps(child);
+  if (process.env.NODE_ENV !== 'production') {
+    if (child.propsData && !vm) {
+      warn('propsData can only be used as an instantiation option.');
+    }
+  }
   var options = {};
   var key;
+  if (child['extends']) {
+    parent = typeof child['extends'] === 'function' ? mergeOptions(parent, child['extends'].options, vm) : mergeOptions(parent, child['extends'], vm);
+  }
   if (child.mixins) {
     for (var i = 0, l = child.mixins.length; i < l; i++) {
       parent = mergeOptions(parent, child.mixins[i], vm);
@@ -24135,11 +24359,14 @@ var util = Object.freeze({
 	devtools: devtools,
 	isIE9: isIE9,
 	isAndroid: isAndroid,
+	isIos: isIos,
+	isWechat: isWechat,
 	get transitionProp () { return transitionProp; },
 	get transitionEndEvent () { return transitionEndEvent; },
 	get animationProp () { return animationProp; },
 	get animationEndEvent () { return animationEndEvent; },
 	nextTick: nextTick,
+	get _Set () { return _Set; },
 	query: query,
 	inDoc: inDoc,
 	getAttr: getAttr,
@@ -24252,13 +24479,8 @@ function initMixin (Vue) {
     this._updateRef();
 
     // initialize data as empty object.
-    // it will be filled up in _initScope().
+    // it will be filled up in _initData().
     this._data = {};
-
-    // save raw constructor data before merge
-    // so that we know which properties are provided at
-    // instantiation.
-    this._runtimeData = options.data;
 
     // call init hook
     this._callHook('init');
@@ -24809,24 +25031,22 @@ var expression = Object.freeze({
 // triggered, the DOM would have already been in updated
 // state.
 
-var queueIndex;
 var queue = [];
 var userQueue = [];
 var has = {};
 var circular = {};
 var waiting = false;
-var internalQueueDepleted = false;
 
 /**
  * Reset the batcher's state.
  */
 
 function resetBatcherState() {
-  queue = [];
-  userQueue = [];
+  queue.length = 0;
+  userQueue.length = 0;
   has = {};
   circular = {};
-  waiting = internalQueueDepleted = false;
+  waiting = false;
 }
 
 /**
@@ -24834,15 +25054,26 @@ function resetBatcherState() {
  */
 
 function flushBatcherQueue() {
-  runBatcherQueue(queue);
-  internalQueueDepleted = true;
-  runBatcherQueue(userQueue);
-  // dev tool hook
-  /* istanbul ignore if */
-  if (devtools && config.devtools) {
-    devtools.emit('flush');
+  var _again = true;
+
+  _function: while (_again) {
+    _again = false;
+
+    runBatcherQueue(queue);
+    runBatcherQueue(userQueue);
+    // user watchers triggered more watchers,
+    // keep flushing until it depletes
+    if (queue.length) {
+      _again = true;
+      continue _function;
+    }
+    // dev tool hook
+    /* istanbul ignore if */
+    if (devtools && config.devtools) {
+      devtools.emit('flush');
+    }
+    resetBatcherState();
   }
-  resetBatcherState();
 }
 
 /**
@@ -24854,8 +25085,8 @@ function flushBatcherQueue() {
 function runBatcherQueue(queue) {
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  for (queueIndex = 0; queueIndex < queue.length; queueIndex++) {
-    var watcher = queue[queueIndex];
+  for (var i = 0; i < queue.length; i++) {
+    var watcher = queue[i];
     var id = watcher.id;
     has[id] = null;
     watcher.run();
@@ -24868,6 +25099,7 @@ function runBatcherQueue(queue) {
       }
     }
   }
+  queue.length = 0;
 }
 
 /**
@@ -24884,20 +25116,14 @@ function runBatcherQueue(queue) {
 function pushWatcher(watcher) {
   var id = watcher.id;
   if (has[id] == null) {
-    if (internalQueueDepleted && !watcher.user) {
-      // an internal watcher triggered by a user watcher...
-      // let's run it immediately after current user watcher is done.
-      userQueue.splice(queueIndex + 1, 0, watcher);
-    } else {
-      // push watcher into appropriate queue
-      var q = watcher.user ? userQueue : queue;
-      has[id] = q.length;
-      q.push(watcher);
-      // queue the flush
-      if (!waiting) {
-        waiting = true;
-        nextTick(flushBatcherQueue);
-      }
+    // push watcher into appropriate queue
+    var q = watcher.user ? userQueue : queue;
+    has[id] = q.length;
+    q.push(watcher);
+    // queue the flush
+    if (!waiting) {
+      waiting = true;
+      nextTick(flushBatcherQueue);
     }
   }
 }
@@ -24938,8 +25164,8 @@ function Watcher(vm, expOrFn, cb, options) {
   this.dirty = this.lazy; // for lazy watchers
   this.deps = [];
   this.newDeps = [];
-  this.depIds = Object.create(null);
-  this.newDepIds = null;
+  this.depIds = new _Set();
+  this.newDepIds = new _Set();
   this.prevError = null; // for async error stacks
   // parse expression for getter/setter
   if (isFn) {
@@ -25031,8 +25257,6 @@ Watcher.prototype.set = function (value) {
 
 Watcher.prototype.beforeGet = function () {
   Dep.target = this;
-  this.newDepIds = Object.create(null);
-  this.newDeps.length = 0;
 };
 
 /**
@@ -25043,10 +25267,10 @@ Watcher.prototype.beforeGet = function () {
 
 Watcher.prototype.addDep = function (dep) {
   var id = dep.id;
-  if (!this.newDepIds[id]) {
-    this.newDepIds[id] = true;
+  if (!this.newDepIds.has(id)) {
+    this.newDepIds.add(id);
     this.newDeps.push(dep);
-    if (!this.depIds[id]) {
+    if (!this.depIds.has(id)) {
       dep.addSub(this);
     }
   }
@@ -25061,14 +25285,18 @@ Watcher.prototype.afterGet = function () {
   var i = this.deps.length;
   while (i--) {
     var dep = this.deps[i];
-    if (!this.newDepIds[dep.id]) {
+    if (!this.newDepIds.has(dep.id)) {
       dep.removeSub(this);
     }
   }
+  var tmp = this.depIds;
   this.depIds = this.newDepIds;
-  var tmp = this.deps;
+  this.newDepIds = tmp;
+  this.newDepIds.clear();
+  tmp = this.deps;
   this.deps = this.newDeps;
   this.newDeps = tmp;
+  this.newDeps.length = 0;
 };
 
 /**
@@ -25192,15 +25420,33 @@ Watcher.prototype.teardown = function () {
  * @param {*} val
  */
 
-function traverse(val) {
-  var i, keys;
-  if (isArray(val)) {
-    i = val.length;
-    while (i--) traverse(val[i]);
-  } else if (isObject(val)) {
-    keys = Object.keys(val);
-    i = keys.length;
-    while (i--) traverse(val[keys[i]]);
+var seenObjects = new _Set();
+function traverse(val, seen) {
+  var i = undefined,
+      keys = undefined;
+  if (!seen) {
+    seen = seenObjects;
+    seen.clear();
+  }
+  var isA = isArray(val);
+  var isO = isObject(val);
+  if (isA || isO) {
+    if (val.__ob__) {
+      var depId = val.__ob__.dep.id;
+      if (seen.has(depId)) {
+        return;
+      } else {
+        seen.add(depId);
+      }
+    }
+    if (isA) {
+      i = val.length;
+      while (i--) traverse(val[i], seen);
+    } else if (isO) {
+      keys = Object.keys(val);
+      i = keys.length;
+      while (i--) traverse(val[keys[i]], seen);
+    }
   }
 }
 
@@ -25309,10 +25555,13 @@ function stringToFragment(templateString, raw) {
 
 function nodeToFragment(node) {
   // if its a template tag and the browser supports it,
-  // its content is already a document fragment.
+  // its content is already a document fragment. However, iOS Safari has
+  // bug when using directly cloned template content with touch
+  // events and can cause crashes when the nodes are removed from DOM, so we
+  // have to treat template elements as string templates. (#2805)
+  /* istanbul ignore if */
   if (isRealTemplate(node)) {
-    trimNode(node.content);
-    return node.content;
+    return stringToFragment(node.innerHTML);
   }
   // script template
   if (node.tagName === 'SCRIPT') {
@@ -25708,7 +25957,7 @@ function FragmentFactory(vm, el) {
   this.vm = vm;
   var template;
   var isString = typeof el === 'string';
-  if (isString || isTemplate(el)) {
+  if (isString || isTemplate(el) && !el.hasAttribute('v-if')) {
     template = parseTemplate(el, true);
   } else {
     template = document.createDocumentFragment();
@@ -26050,7 +26299,15 @@ var vFor = {
       });
       setTimeout(op, staggerAmount);
     } else {
-      frag.before(prevEl.nextSibling);
+      var target = prevEl.nextSibling;
+      /* istanbul ignore if */
+      if (!target) {
+        // reset end anchor position in case the position was messed up
+        // by an external drag-n-drop library.
+        after(this.end, prevEl);
+        target = this.end;
+      }
+      frag.before(target);
     }
   },
 
@@ -26121,7 +26378,7 @@ var vFor = {
     var primitive = !isObject(value);
     var id;
     if (key || trackByKey || primitive) {
-      id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      id = getTrackByKey(index, key, value, trackByKey);
       if (!cache[id]) {
         cache[id] = frag;
       } else if (trackByKey !== '$index') {
@@ -26135,8 +26392,10 @@ var vFor = {
         } else {
           process.env.NODE_ENV !== 'production' && this.warnDuplicate(value);
         }
-      } else {
+      } else if (Object.isExtensible(value)) {
         def(value, id, frag);
+      } else if (process.env.NODE_ENV !== 'production') {
+        warn('Frozen v-for objects cannot be automatically tracked, make sure to ' + 'provide a track-by key.');
       }
     }
     frag.raw = value;
@@ -26156,7 +26415,7 @@ var vFor = {
     var primitive = !isObject(value);
     var frag;
     if (key || trackByKey || primitive) {
-      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      var id = getTrackByKey(index, key, value, trackByKey);
       frag = this.cache[id];
     } else {
       frag = value[this.id];
@@ -26183,7 +26442,7 @@ var vFor = {
     var key = hasOwn(scope, '$key') && scope.$key;
     var primitive = !isObject(value);
     if (trackByKey || key || primitive) {
-      var id = trackByKey ? trackByKey === '$index' ? index : getPath(value, trackByKey) : key || value;
+      var id = getTrackByKey(index, key, value, trackByKey);
       this.cache[id] = null;
     } else {
       value[this.id] = null;
@@ -26331,6 +26590,19 @@ function range(n) {
     ret[i] = i;
   }
   return ret;
+}
+
+/**
+ * Get the track by key for an item.
+ *
+ * @param {Number} index
+ * @param {String} key
+ * @param {*} value
+ * @param {String} [trackByKey]
+ */
+
+function getTrackByKey(index, key, value, trackByKey) {
+  return trackByKey ? trackByKey === '$index' ? index : trackByKey.charAt(0).match(/\w/) ? getPath(value, trackByKey) : value[trackByKey] : key || value;
 }
 
 if (process.env.NODE_ENV !== 'production') {
@@ -26934,7 +27206,7 @@ var on$1 = {
     }
     // key filter
     var keys = Object.keys(this.modifiers).filter(function (key) {
-      return key !== 'stop' && key !== 'prevent' && key !== 'self';
+      return key !== 'stop' && key !== 'prevent' && key !== 'self' && key !== 'capture';
     });
     if (keys.length) {
       handler = keyFilter(handler, keys);
@@ -27063,6 +27335,12 @@ function prefix(prop) {
   }
   var i = prefixes.length;
   var prefixed;
+  if (camel !== 'filter' && camel in testEl.style) {
+    return {
+      kebab: prop,
+      camel: camel
+    };
+  }
   while (i--) {
     prefixed = camelPrefixes[i] + upper;
     if (prefixed in testEl.style) {
@@ -27071,12 +27349,6 @@ function prefix(prop) {
         camel: prefixed
       };
     }
-  }
-  if (camel in testEl.style) {
-    return {
-      kebab: prop,
-      camel: camel
-    };
   }
 }
 
@@ -27166,8 +27438,12 @@ var bind$1 = {
       attr = camelize(attr);
     }
     if (!interp && attrWithPropsRE.test(attr) && attr in el) {
-      el[attr] = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
+      var attrValue = attr === 'value' ? value == null // IE9 will set input.value to "null" for null...
       ? '' : value : value;
+
+      if (el[attr] !== attrValue) {
+        el[attr] = attrValue;
+      }
     }
     // set model props
     var modelProp = modelProps[attr];
@@ -27267,66 +27543,66 @@ var vClass = {
   deep: true,
 
   update: function update(value) {
-    if (value && typeof value === 'string') {
-      this.handleObject(stringToObject(value));
-    } else if (isPlainObject(value)) {
-      this.handleObject(value);
-    } else if (isArray(value)) {
-      this.handleArray(value);
-    } else {
+    if (!value) {
       this.cleanup();
+    } else if (typeof value === 'string') {
+      this.setClass(value.trim().split(/\s+/));
+    } else {
+      this.setClass(normalize$1(value));
     }
   },
 
-  handleObject: function handleObject(value) {
-    this.cleanup(value);
-    this.prevKeys = Object.keys(value);
-    setObjectClasses(this.el, value);
-  },
-
-  handleArray: function handleArray(value) {
+  setClass: function setClass(value) {
     this.cleanup(value);
     for (var i = 0, l = value.length; i < l; i++) {
       var val = value[i];
-      if (val && isPlainObject(val)) {
-        setObjectClasses(this.el, val);
-      } else if (val && typeof val === 'string') {
-        addClass(this.el, val);
+      if (val) {
+        apply(this.el, val, addClass);
       }
     }
-    this.prevKeys = value.slice();
+    this.prevKeys = value;
   },
 
   cleanup: function cleanup(value) {
-    if (!this.prevKeys) return;
-
-    var i = this.prevKeys.length;
+    var prevKeys = this.prevKeys;
+    if (!prevKeys) return;
+    var i = prevKeys.length;
     while (i--) {
-      var key = this.prevKeys[i];
-      if (!key) continue;
-
-      var keys = isPlainObject(key) ? Object.keys(key) : [key];
-      for (var j = 0, l = keys.length; j < l; j++) {
-        toggleClasses(this.el, keys[j], removeClass);
+      var key = prevKeys[i];
+      if (!value || value.indexOf(key) < 0) {
+        apply(this.el, key, removeClass);
       }
     }
   }
 };
 
-function setObjectClasses(el, obj) {
-  var keys = Object.keys(obj);
-  for (var i = 0, l = keys.length; i < l; i++) {
-    var key = keys[i];
-    if (!obj[key]) continue;
-    toggleClasses(el, key, addClass);
-  }
-}
+/**
+ * Normalize objects and arrays (potentially containing objects)
+ * into array of strings.
+ *
+ * @param {Object|Array<String|Object>} value
+ * @return {Array<String>}
+ */
 
-function stringToObject(value) {
-  var res = {};
-  var keys = value.trim().split(/\s+/);
-  for (var i = 0, l = keys.length; i < l; i++) {
-    res[keys[i]] = true;
+function normalize$1(value) {
+  var res = [];
+  if (isArray(value)) {
+    for (var i = 0, l = value.length; i < l; i++) {
+      var _key = value[i];
+      if (_key) {
+        if (typeof _key === 'string') {
+          res.push(_key);
+        } else {
+          for (var k in _key) {
+            if (_key[k]) res.push(k);
+          }
+        }
+      }
+    }
+  } else if (isObject(value)) {
+    for (var key in value) {
+      if (value[key]) res.push(key);
+    }
   }
   return res;
 }
@@ -27342,14 +27618,12 @@ function stringToObject(value) {
  * @param {Function} fn
  */
 
-function toggleClasses(el, key, fn) {
+function apply(el, key, fn) {
   key = key.trim();
-
   if (key.indexOf(' ') === -1) {
     fn(el, key);
     return;
   }
-
   // The key contains one or more space characters.
   // Since a class name doesn't accept such characters, we
   // treat it as multiple classes.
@@ -27400,6 +27674,7 @@ var component = {
       // cached, when the component is used elsewhere this attribute
       // will remain at link time.
       this.el.removeAttribute('is');
+      this.el.removeAttribute(':is');
       // remove ref, same as above
       if (this.descriptor.ref) {
         this.el.removeAttribute('v-ref:' + hyphenate(this.descriptor.ref));
@@ -27834,6 +28109,7 @@ function makePropsLinkFn(props) {
   return function propsLinkFn(vm, scope) {
     // store resolved props info
     vm._props = {};
+    var inlineProps = vm.$options.propsData;
     var i = props.length;
     var prop, path, options, value, raw;
     while (i--) {
@@ -27842,7 +28118,9 @@ function makePropsLinkFn(props) {
       path = prop.path;
       options = prop.options;
       vm._props[path] = prop;
-      if (raw === null) {
+      if (inlineProps && hasOwn(inlineProps, path)) {
+        initProp(vm, prop, inlineProps[path]);
+      }if (raw === null) {
         // initialize absent prop
         initProp(vm, prop, undefined);
       } else if (prop.dynamic) {
@@ -28603,7 +28881,7 @@ function compile(el, options, partial) {
   // link function for the node itself.
   var nodeLinkFn = partial || !options._asComponent ? compileNode(el, options) : null;
   // link function for the childNodes
-  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && el.tagName !== 'SCRIPT' && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
+  var childLinkFn = !(nodeLinkFn && nodeLinkFn.terminal) && !isScript(el) && el.hasChildNodes() ? compileNodeList(el.childNodes, options) : null;
 
   /**
    * A composite linker function to be called on a already
@@ -28786,7 +29064,7 @@ function compileRoot(el, options, contextOptions) {
     });
     if (names.length) {
       var plural = names.length > 1;
-      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment_Instance');
+      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
     }
   }
 
@@ -28823,7 +29101,7 @@ function compileRoot(el, options, contextOptions) {
 
 function compileNode(node, options) {
   var type = node.nodeType;
-  if (type === 1 && node.tagName !== 'SCRIPT') {
+  if (type === 1 && !isScript(node)) {
     return compileElement(node, options);
   } else if (type === 3 && node.data.trim()) {
     return compileTextNode(node, options);
@@ -29118,7 +29396,6 @@ function checkTerminalDirectives(el, attrs, options) {
   var attr, name, value, modifiers, matched, dirName, rawName, arg, def, termDef;
   for (var i = 0, j = attrs.length; i < j; i++) {
     attr = attrs[i];
-    modifiers = parseModifiers(attr.name);
     name = attr.name.replace(modifierRE, '');
     if (matched = name.match(dirAttrRE)) {
       def = resolveAsset(options, 'directives', matched[1]);
@@ -29126,6 +29403,7 @@ function checkTerminalDirectives(el, attrs, options) {
         if (!termDef || (def.priority || DEFAULT_TERMINAL_PRIORITY) > termDef.priority) {
           termDef = def;
           rawName = attr.name;
+          modifiers = parseModifiers(attr.name);
           value = attr.value;
           dirName = matched[1];
           arg = matched[2];
@@ -29346,6 +29624,10 @@ function hasOneTime(tokens) {
   }
 }
 
+function isScript(el) {
+  return el.tagName === 'SCRIPT' && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript');
+}
+
 var specialCharRE = /[^\w\-:\.]/;
 
 /**
@@ -29475,8 +29757,8 @@ function mergeAttrs(from, to) {
     value = attrs[i].value;
     if (!to.hasAttribute(name) && !specialCharRE.test(name)) {
       to.setAttribute(name, value);
-    } else if (name === 'class' && !parseText(value)) {
-      value.trim().split(/\s+/).forEach(function (cls) {
+    } else if (name === 'class' && !parseText(value) && (value = value.trim())) {
+      value.split(/\s+/).forEach(function (cls) {
         addClass(to, cls);
       });
     }
@@ -29515,6 +29797,10 @@ function resolveSlots(vm, content) {
     contents[name] = extractFragment(contents[name], content);
   }
   if (content.hasChildNodes()) {
+    var nodes = content.childNodes;
+    if (nodes.length === 1 && nodes[0].nodeType === 3 && !nodes[0].data.trim()) {
+      return;
+    }
     contents['default'] = extractFragment(content.childNodes, content);
   }
 }
@@ -29533,7 +29819,7 @@ function extractFragment(nodes, parent) {
     var node = nodes[i];
     if (isTemplate(node) && !node.hasAttribute('v-if') && !node.hasAttribute('v-for')) {
       parent.removeChild(node);
-      node = parseTemplate(node);
+      node = parseTemplate(node, true);
     }
     frag.appendChild(node);
   }
@@ -29614,7 +29900,6 @@ function stateMixin (Vue) {
       process.env.NODE_ENV !== 'production' && warn('data functions should return an object.', this);
     }
     var props = this._props;
-    var runtimeData = this._runtimeData ? typeof this._runtimeData === 'function' ? this._runtimeData() : this._runtimeData : null;
     // proxy data on instance
     var keys = Object.keys(data);
     var i, key;
@@ -29625,10 +29910,10 @@ function stateMixin (Vue) {
       // 1. it's not already defined as a prop
       // 2. it's provided via a instantiation option AND there are no
       //    template prop present
-      if (!props || !hasOwn(props, key) || runtimeData && hasOwn(runtimeData, key) && props[key].raw === null) {
+      if (!props || !hasOwn(props, key)) {
         this._proxy(key);
       } else if (process.env.NODE_ENV !== 'production') {
-        warn('Data field "' + key + '" is already defined ' + 'as a prop. Use prop default value instead.', this);
+        warn('Data field "' + key + '" is already defined ' + 'as a prop. To provide default value for a prop, use the "default" ' + 'prop option; if you want to pass prop values to an instantiation ' + 'call, use the "propsData" option.', this);
       }
     }
     // observe data
@@ -29818,18 +30103,21 @@ function eventsMixin (Vue) {
 
   function registerComponentEvents(vm, el) {
     var attrs = el.attributes;
-    var name, handler;
+    var name, value, handler;
     for (var i = 0, l = attrs.length; i < l; i++) {
       name = attrs[i].name;
       if (eventRE.test(name)) {
         name = name.replace(eventRE, '');
-        handler = (vm._scope || vm._context).$eval(attrs[i].value, true);
-        if (typeof handler === 'function') {
-          handler._fromParent = true;
-          vm.$on(name.replace(eventRE), handler);
-        } else if (process.env.NODE_ENV !== 'production') {
-          warn('v-on:' + name + '="' + attrs[i].value + '" ' + 'expects a function value, got ' + handler, vm);
+        // force the expression into a statement so that
+        // it always dynamically resolves the method to call (#2670)
+        // kinda ugly hack, but does the job.
+        value = attrs[i].value;
+        if (isSimplePath(value)) {
+          value += '.apply(this, $arguments)';
         }
+        handler = (vm._scope || vm._context).$eval(value, true);
+        handler._fromParent = true;
+        vm.$on(name.replace(eventRE), handler);
       }
     }
   }
@@ -30480,7 +30768,7 @@ function lifecycleMixin (Vue) {
     }
     // remove reference from data ob
     // frozen object may not have observer.
-    if (this._data.__ob__) {
+    if (this._data && this._data.__ob__) {
       this._data.__ob__.removeVm(this);
     }
     // Clean up references to private properties and other
@@ -30553,6 +30841,7 @@ function miscMixin (Vue) {
     } else {
       factory = resolveAsset(this.$options, 'components', value, true);
     }
+    /* istanbul ignore if */
     if (!factory) {
       return;
     }
@@ -30602,7 +30891,7 @@ function dataAPI (Vue) {
   Vue.prototype.$get = function (exp, asStatement) {
     var res = parseExpression(exp);
     if (res) {
-      if (asStatement && !isSimplePath(exp)) {
+      if (asStatement) {
         var self = this;
         return function statementHandler() {
           self.$arguments = toArray(arguments);
@@ -31534,17 +31823,19 @@ var filters = {
    * 12345 => $12,345.00
    *
    * @param {String} sign
+   * @param {Number} decimals Decimal places
    */
 
-  currency: function currency(value, _currency) {
+  currency: function currency(value, _currency, decimals) {
     value = parseFloat(value);
     if (!isFinite(value) || !value && value !== 0) return '';
     _currency = _currency != null ? _currency : '$';
-    var stringified = Math.abs(value).toFixed(2);
-    var _int = stringified.slice(0, -3);
+    decimals = decimals != null ? decimals : 2;
+    var stringified = Math.abs(value).toFixed(decimals);
+    var _int = decimals ? stringified.slice(0, -1 - decimals) : stringified;
     var i = _int.length % 3;
     var head = i > 0 ? _int.slice(0, i) + (_int.length > 3 ? ',' : '') : '';
-    var _float = stringified.slice(-3);
+    var _float = decimals ? stringified.slice(-1 - decimals) : '';
     var sign = value < 0 ? '-' : '';
     return sign + _currency + head + _int.slice(i).replace(digitsRE, '$1,') + _float;
   },
@@ -31764,7 +32055,7 @@ function installGlobalAPI (Vue) {
 
 installGlobalAPI(Vue);
 
-Vue.version = '1.0.21';
+Vue.version = '1.0.24';
 
 // devtools global hook
 /* istanbul ignore next */
@@ -31780,27 +32071,7 @@ setTimeout(function () {
 
 module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":17}],46:[function(require,module,exports){
-var inserted = exports.cache = {}
-
-exports.insert = function (css) {
-  if (inserted[css]) return
-  inserted[css] = true
-
-  var elem = document.createElement('style')
-  elem.setAttribute('type', 'text/css')
-
-  if ('textContent' in elem) {
-    elem.textContent = css
-  } else {
-    elem.styleSheet.cssText = css
-  }
-
-  document.getElementsByTagName('head')[0].appendChild(elem)
-  return elem
-}
-
-},{}],47:[function(require,module,exports){
+},{"_process":40}],69:[function(require,module,exports){
 'use strict';
 
 /*
@@ -31810,6 +32081,19 @@ window.$ = window.jQuery = require('jquery');
 require('bootstrap-sass');
 window.Spinner = require('spin.js');
 window.moment = require('moment');moment.locale('cs'); // Moment.js
+
+var nprogress = require('nprogress');
+window.progress = {
+    bar: nprogress.configure({ parent: '#app' }),
+    load: 0,
+    total: 0
+};
+
+window.modalProgress = {
+    bar: nprogress.configure({ parent: '#app' }),
+    load: 0,
+    total: 0
+};
 
 var Vue = require('vue');
 var VueRouter = require('vue-router');
@@ -31825,8 +32109,8 @@ Vue.use(require('vue-resource'));
 */
 var App = require('./app.vue'); // base view
 var Dashboard = require('./views/dashboard.vue');
-var GuildHeroes = require('./views/guild-heroes.vue');
-var Calculator = require('./views/calculator.vue');
+var GuildHeroes = require('./views/guild/heroes.vue');
+var GuildMembers = require('./views/guild/members.vue');
 
 /*
     Vue routes
@@ -31838,22 +32122,20 @@ router.map({
         name: 'dashboard',
         component: Dashboard
     },
+    '/guild-members': {
+        name: 'guild-members',
+        component: GuildMembers
+    },
     '/guild-heroes': {
         name: 'guild-heroes',
         component: GuildHeroes
-    },
-    '/calc': {
-        name: 'calculator',
-        component: Calculator
     }
 });
 
 router.start(App, '#vue');
 
-},{"./app.vue":48,"./views/calculator.vue":60,"./views/dashboard.vue":61,"./views/guild-heroes.vue":62,"bootstrap-sass":2,"jquery":14,"moment":15,"spin.js":18,"vue":45,"vue-resource":33,"vue-router":44}],48:[function(require,module,exports){
+},{"./app.vue":70,"./views/dashboard.vue":86,"./views/guild/heroes.vue":87,"./views/guild/members.vue":88,"bootstrap-sass":2,"jquery":37,"moment":38,"nprogress":39,"spin.js":41,"vue":68,"vue-resource":56,"vue-router":67}],70:[function(require,module,exports){
 'use strict';
-
-var nprogress = require('nprogress');
 
 var Sidebar = require('./components/sidebar.vue');
 var Modal = require('./modals/_modal.vue');
@@ -31862,12 +32144,23 @@ module.exports = {
     data: function data() {
         return {
             session: session,
-            progress: nprogress.configure({ parent: '#app' })
+            progress: progress
         };
     },
     components: {
         sidebar: Sidebar,
         modal: Modal
+    },
+    watch: {
+        'progress.load': function progressLoad(val, oldVal) {
+            if (!val) {
+                this.progress.total = 0;
+                this.progress.bar.done();
+            } else {
+                if (val > oldVal) this.progress.total++;
+                this.progress.bar.set((this.progress.total - val) / this.progress.total);
+            }
+        }
     },
     ready: function ready() {
         // Initialize Bootstrap tooltips
@@ -31879,6 +32172,9 @@ module.exports = {
             var size = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 
             this.$broadcast('modal-open-global', view, data, size);
+        },
+        'hero-add': function heroAdd(hero) {
+            this.$broadcast('hero-add-global', hero);
         },
         'hero-update': function heroUpdate(hero_id, hero) {
             this.$broadcast('hero-update-global', hero_id, hero);
@@ -31894,102 +32190,14 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\app.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\app.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./components/sidebar.vue":52,"./modals/_modal.vue":57,"nprogress":16,"vue":45,"vue-hot-reload-api":19}],49:[function(require,module,exports){
-'use strict';
-
-var Formulas = require('../mixins/formulas.vue');
-
-module.exports = {
-    mixins: [Formulas],
-    props: ['stat', 'attack', 'power', 'critdmg', 'critrate'],
-    data: function data() {
-        return {
-            chart: {},
-            chartData: {
-                labels: [],
-                datasets: [{
-                    label: "+/- Crit Damage",
-                    fillColor: "rgba(149,100,207,0.2)",
-                    strokeColor: "rgba(149,100,207,1)",
-                    pointColor: "rgba(149,100,207,1)",
-                    pointStrokeColor: "#fff",
-                    pointHighlightFill: "#fff",
-                    pointHighlightStroke: "rgba(149,100,207,1)",
-                    data: []
-                }]
-            }
-        };
-    },
-    watch: {
-        'datapoint': function datapoint() {
-            console.log(this.optimizeAtkData());
-            this.chartData.datasets[0].data = this.dataset.data;
-
-            for (var i = 0; i < this.dataset.data.length; i++) {
-                this.chart.datasets[0].points[i].value = this.dataset.data[i];
-            }
-
-            this.chart.update();
-        }
-    },
-    computed: {
-        datapoint: function datapoint() {
-            return this.calculateDatapoint(this.attack, this.critdmg);
-        },
-        dataset: function dataset() {
-            if (this.stat == 'atk') {
-                return this.optimizeAtkData();
-            } else {
-                return this.optimizeCdData();
-            }
-        }
-    },
-    ready: function ready() {
-        var ctx = this.$el.getContext("2d");
-        this.chartData.labels = this.dataset.labels;
-        this.chartData.datasets[0].data = this.dataset.data;
-        this.chart = new Chart(ctx).Line(this.chartData, {});
-    },
-    methods: {
-        calculateDatapoint: function calculateDatapoint(attack, critdmg) {
-            var dmg = this.calculateDamage(attack, this.power);
-            return this.calculateAvgDamage(dmg, this.critrate, this.calculateCritDamage(dmg, critdmg));
-        },
-        optimizeAtkData: function optimizeAtkData() {
-            return {
-                labels: ['-30%', '-20%', '-10%', '*', '+10%', '+20%', '+30%'],
-                data: [this.calculateDatapoint(this.attack - .3 * this.attack, this.critdmg), this.calculateDatapoint(this.attack - .2 * this.attack, this.critdmg), this.calculateDatapoint(this.attack - .1 * this.attack, this.critdmg), this.calculateDatapoint(this.attack, this.critdmg), this.calculateDatapoint(this.attack + .1 * this.attack, this.critdmg), this.calculateDatapoint(this.attack + .2 * this.attack, this.critdmg), this.calculateDatapoint(this.attack + .3 * this.attack, this.critdmg)]
-            };
-        },
-        optimizeCdData: function optimizeCdData() {
-            return {
-                labels: ['-30%', '-20%', '-10%', '*', '+10%', '+20%', '+30%'],
-                data: [this.calculateDatapoint(this.attack, this.critdmg - 30), this.calculateDatapoint(this.attack, this.critdmg - 20), this.calculateDatapoint(this.attack, this.critdmg - 10), this.calculateDatapoint(this.attack, this.critdmg), this.calculateDatapoint(this.attack, this.critdmg + 10), this.calculateDatapoint(this.attack, this.critdmg + 20), this.calculateDatapoint(this.attack, this.critdmg + 30)]
-            };
-        }
-    }
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<canvas class=\"chart\"></canvas>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\damage-optimization-chart.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"../mixins/formulas.vue":55,"vue":45,"vue-hot-reload-api":19}],50:[function(require,module,exports){
+},{"./components/sidebar.vue":72,"./modals/_modal.vue":78,"vue":68,"vue-hot-reload-api":42}],71:[function(require,module,exports){
 'use strict';
 
 var Modals = require('../mixins/modals.vue');
@@ -32021,11 +32229,17 @@ module.exports = {
     },
     data: function data() {
         return {
-            session: session
+            session: session,
+            overflown: false
         };
+    },
+    ready: function ready() {
+        var heroName = $(this.$el).find('.hero-name');
+        if (heroName.prop('scrollHeight') > heroName.height()) this.overflown = true;
     },
     events: {
         'hero-update-global': function heroUpdateGlobal(hero_id, hero) {
+            console.log(hero_id, hero);
             if (this.hero.id == hero_id) this.$set('hero', hero);
         },
         'hero-delete-global': function heroDeleteGlobal(hero_id) {
@@ -32034,78 +32248,42 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"user-hero clearfix {{ hero.book.attribute.name }}\" v-on:click=\"openModal(modal,{'hero_id':hero.id})\" data-toggle=\"tooltip\" data-placement=\"left\" title=\"{{ hero.book.name }}\">\n    <span class=\"user\" v-if=\"showUser\" v-for=\"member in session.guild.members | filterBy hero.user.discord_id in 'user.id'\">\n        {{ member.user.username }}\n    </span>\n    <div class=\"pull-left\">\n        <span v-bind:class=\"{ 'grade': true, 'legendary': hero.book.legendary }\">\n            <i v-for=\"n in hero.grade\" class=\"fa fa-star\"></i>\n        </span>\n        <img :src=\"hero.book.img\" class=\"img-responsive\">\n    </div>\n    <div class=\"pull-left\">\n        <ul>\n            <li>LVL <strong>{{ hero.lvl }}</strong> &nbsp; <span v-if=\"hero.powerup_lvl\">+{{ hero.powerup_lvl }}</span></li>\n            <li>A <strong>{{ hero.atk }}</strong></li>\n            <li>D <strong>{{ hero.def }}</strong></li>\n            <li>H <strong>{{ hero.hp }}</strong></li>\n            <li>S <strong>{{ hero.spd }}</strong></li>\n        </ul>\n    </div>\n    <div class=\"pull-right\">\n        <ul>\n            <li>CR&nbsp; <strong>{{ hero.cr * 100 }}%</strong></li>\n            <li>CD&nbsp; <strong>{{ hero.cd * 100 }}%</strong></li>\n            <li>PEN <strong>{{ hero.pen * 100 }}%</strong></li>\n            <li>ACC <strong>{{ hero.acc * 100 }}%</strong></li>\n            <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>\n        </ul>\n    </div>\n    <div class=\"tags\">\n        <template v-for=\"tag in hero.tags\">\n            <div v-bind:style=\"{ backgroundColor: '#' + tag.color }\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"{{ tag.name }}\">\n                {{ tag.short_name }}\n            </div>\n        </template>\n    </div>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"user-hero clearfix {{ hero.book.attribute.name }}\" v-on:click=\"openModal(modal,{'hero_id':hero.id})\">\n    <span class=\"user\" v-if=\"showUser\" v-for=\"member in session.guild.members | filterBy hero.user.discord_id in 'user.id'\">\n        {{ member.user.username }}\n    </span>\n    <div class=\"pull-left\">\n        <span v-bind:class=\"{ 'grade': true, 'legendary': hero.book.legendary }\">\n            <i v-for=\"n in hero.grade\" class=\"fa fa-star\"></i>\n        </span>\n        <img :src=\"hero.book.img\" class=\"img-responsive\">\n        <span class=\"level\">{{ hero.lvl }}</span>\n        <span v-if=\"hero.powerup_lvl\" class=\"powerup-lvl\">+{{ hero.powerup_lvl }}</span>\n    </div>\n    <div class=\"pull-left\">\n        <ul>\n            <li v-bind:class=\"{ 'hero-name': true, 'overflown': overflown }\" :data-toggle=\"overflown ? 'tooltip' : null\" data-toggle=\"tooltip\" title=\"{{ hero.book.name }}\">\n                    <strong>{{ hero.book.name }}</strong>\n            </li>\n            <li>A <strong>{{ hero.atk }}</strong></li>\n            <li>D <strong>{{ hero.def }}</strong></li>\n            <li>H <strong>{{ hero.hp }}</strong></li>\n            <li>S <strong>{{ hero.spd }}</strong></li>\n        </ul>\n    </div>\n    <div class=\"pull-right\">\n        <ul>\n            <li>CR&nbsp; <strong>{{ hero.cr * 100 }}</strong>%</li>\n            <li>CD&nbsp; <strong>{{ hero.cd * 100 }}</strong>%</li>\n            <li>PEN <strong>{{ hero.pen * 100 }}</strong>%</li>\n            <li>ACC <strong>{{ hero.acc * 100 }}</strong>%</li>\n            <li>EVA <strong>{{ hero.eva * 100 }}</strong>%</li>\n        </ul>\n    </div>\n    <div class=\"tags\">\n        <template v-for=\"tag in hero.tags\">\n            <div v-bind:style=\"{ backgroundColor: '#' + tag.color }\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"{{ tag.name }}\">\n                {{ tag.short_name }}\n            </div>\n        </template>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\hero.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\components\\hero.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../mixins/modals.vue":56,"vue":45,"vue-hot-reload-api":19}],51:[function(require,module,exports){
+},{"../mixins/modals.vue":77,"vue":68,"vue-hot-reload-api":42}],72:[function(require,module,exports){
 "use strict";
-
-module.exports = {
-    data: function data() {
-        return {
-            msg: "hello from sidebar! :D"
-        };
-    },
-    events: {
-        'preloader-remove': function preloaderRemove() {
-            this.$remove();
-        }
-    }
-};
-if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div class=\"preloader fade in\"></div>\n"
-if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), true)
-  if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\preloader.vue"
-  if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
-  } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
-  }
-})()}
-},{"vue":45,"vue-hot-reload-api":19}],52:[function(require,module,exports){
-'use strict';
-
-var Preloader = require('./preloader.vue');
 
 module.exports = {
     data: function data() {
         return {
             session: session
         };
-    },
-    components: {
-        preloader: Preloader
-    },
-    ready: function ready() {
-        this.$broadcast('preloader-remove');
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"sidebar\">\n    <div class=\"list-group\">\n        <a href=\"#\" class=\"list-group-item user clearfix\">\n            <img class=\"gh-avatar pull-left\" v-bind:src=\"session.userAvatar\" alt=\"{{ session.user.discord.user.username }}\">\n            <div class=\"stats pull-right\">\n                <p class=\"usr\">{{ session.user.discord.user.username }}</p>\n                <p class=\"bookmark\" v-for=\"role in session.guild.roles | filterBy session.user.discord.roles[0] in 'id'\">{{ role.name }}</p>\n                <p class=\"comment\"><strong>3000</strong> posts</p>\n            </div>\n        </a>\n    </div>\n    <div class=\"list-group\">\n        <a v-link=\"{name: 'dashboard'}\" class=\"list-group-item\">My Heroes <i class=\"fa fa-users pull-right\"></i></a>\n        <a v-link=\"{name: 'calculator'}\" class=\"list-group-item\">Damage Calculator <i class=\"fa fa-calculator pull-right\"></i></a>\n    </div>\n    <div class=\"list-group\">\n        <a v-link=\"{name: 'guild-heroes'}\" class=\"list-group-item\">Guild Heroes <i class=\"fa fa-users pull-right\"></i></a>\n    </div>\n    <preloader></preloader>\n</div>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<div id=\"sidebar\">\n    <div class=\"list-group\">\n        <a href=\"#\" class=\"list-group-item user clearfix\">\n            <img class=\"gh-avatar pull-left\" v-bind:src=\"session.userAvatar\" alt=\"{{ session.user.discord.user.username }}\">\n            <div class=\"stats pull-right\">\n                <p class=\"usr\">{{ session.user.discord.user.username }}</p>\n                <p class=\"rank\" v-for=\"role in session.guild.roles | filterBy session.user.discord.roles[0] in 'id'\">{{ role.name }}</p>\n            </div>\n        </a>\n        <a v-link=\"{name: 'dashboard', exact: true}\" class=\"list-group-item\">My Heroes <i class=\"fa fa-shield pull-right\"></i></a>\n    </div>\n\n    <div class=\"list-group\">\n        <a v-link=\"{name: 'guild-members'}\" class=\"list-group-item\">Guild Members <i class=\"fa fa-users pull-right\"></i></a>\n        <a v-link=\"{name: 'guild-heroes'}\" class=\"list-group-item\">Guild Heroes <i class=\"fa fa-shield pull-right\"></i></a>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\sidebar.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\components\\sidebar.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./preloader.vue":51,"vue":45,"vue-hot-reload-api":19}],53:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],73:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -32170,19 +32348,56 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\components\\spinner.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\components\\spinner.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":45,"vue-hot-reload-api":19}],54:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],74:[function(require,module,exports){
 "use strict";
 
 module.exports = {
     read: function read(val) {
-        return val * 100;
+        return val;
+    },
+    write: function write(val, oldVal) {
+        console.log(val);
+        if (typeof val == "number") return val;
+
+        return this.$eval(val);
+        /*if (typeof(val) == "number") {
+            return val
+        } else {
+            var nums = val.split("+");
+            if (nums[0].trim()*1+1 && nums[1].trim()*1+1) {
+                return nums[0].trim()*1 + nums[1].trim()*1;
+            } else {
+                alert("INVALID");
+                return oldVal;
+            }
+        }*/
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\filters\\eval.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":68,"vue-hot-reload-api":42}],75:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+    read: function read(val) {
+        return Math.floor(val * 100);
     },
     write: function write(val, oldVal) {
         return val / 100;
@@ -32193,26 +32408,26 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\filters\\percent.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\filters\\percent.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":45,"vue-hot-reload-api":19}],55:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],76:[function(require,module,exports){
 "use strict";
 
 module.exports = {
     methods: {
         calculateDamage: function calculateDamage(heroAtk, skillPwr) {
-            return Math.round(heroAtk * (skillPwr / 100));
+            return Math.round(heroAtk * skillPwr);
         },
         calculateCritDamage: function calculateCritDamage(damage, heroCd) {
-            return Math.round(damage + damage * (heroCd / 100));
+            return Math.round(damage + damage * heroCd);
         },
         calculateAvgDamage: function calculateAvgDamage(damage, heroCr, crDamage) {
-            return Math.round(damage * ((100 - heroCr) / 100) + crDamage * (heroCr / 100));
+            return Math.round(damage * (1 - heroCr) + crDamage * heroCr);
         }
     }
 };
@@ -32221,14 +32436,14 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\mixins\\formulas.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\mixins\\formulas.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":45,"vue-hot-reload-api":19}],56:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],77:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -32246,34 +32461,36 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\mixins\\modals.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\mixins\\modals.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"vue":45,"vue-hot-reload-api":19}],57:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],78:[function(require,module,exports){
 'use strict';
 
 var Spinner = require('../components/spinner.vue');
 
 var Hero = require('./hero.vue');
 var HeroEdit = require('./hero-edit.vue');
+var HeroAdd = require('./hero-add.vue');
 
 module.exports = {
     data: function data() {
         return {
+            progress: modalProgress,
             view: '',
             size: '',
-            data: {},
-            loading: true
+            data: {}
         };
     },
     components: {
         spinner: Spinner,
         hero: Hero,
-        'hero-edit': HeroEdit
+        'hero-edit': HeroEdit,
+        'hero-add': HeroAdd
     },
     methods: {
         setSize: function setSize(size) {
@@ -32291,7 +32508,6 @@ module.exports = {
             var data = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
             var size = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 
-            this.loading = true;
             this.$set('view', '');
             this.$set('view', view);
             this.$set('data', data);
@@ -32301,19 +32517,85 @@ module.exports = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\">\n    <div v-show=\"loading\"><spinner></spinner></div>\n\n    <div v-show=\"!loading\" class=\"modal-dialog {{ size }}\" role=\"document\">\n        <div class=\"modal-content\">\n            <component :is=\"view\" :data=\"data\"></component>\n        </div>\n    </div>\n</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal fade\" id=\"modal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"modal-label\">\n    <div v-show=\"progress.load\"><spinner></spinner></div>\n\n    <div v-show=\"!progress.load\" class=\"modal-dialog {{ size }}\" role=\"document\">\n        <div class=\"modal-content\">\n            <component :is=\"view\" :data=\"data\"></component>\n        </div>\n    </div>\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\modals\\_modal.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\modals\\_modal.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../components/spinner.vue":53,"./hero-edit.vue":58,"./hero.vue":59,"vue":45,"vue-hot-reload-api":19}],58:[function(require,module,exports){
+},{"../components/spinner.vue":73,"./hero-add.vue":79,"./hero-edit.vue":80,"./hero.vue":81,"vue":68,"vue-hot-reload-api":42}],79:[function(require,module,exports){
+'use strict';
+
+var Spinner = require('../components/spinner.vue');
+
+var UserHeroes = require('../resources/userHeroes.vue');
+var Book = require('../resources/book.vue');
+
+module.exports = {
+    mixins: [Book, UserHeroes],
+    components: {
+        spinner: Spinner
+    },
+    props: {
+        data: {
+            type: Object,
+            required: true
+        }
+    },
+    data: function data() {
+        return {
+            session: session,
+            progress: modalProgress,
+            saving: false,
+            book: [],
+            heroesNew: { 'id': 0 }
+        };
+    },
+    ready: function ready() {
+        this.init();
+    },
+    methods: {
+        init: function init() {
+            this.progress.load++;
+            this.bookGet(function (response) {
+                this.progress.load--;
+                this.$set('book', response.data);
+            });
+        },
+        reset: function reset() {
+            this.saving = false;
+            this.init();
+        },
+        create: function create() {
+            this.saving = true;
+            this.userHeroesCreate(this.heroesNew.id, function (response) {
+                this.saving = false;
+                this.$dispatch('hero-add', response.data);
+                $('#modal').modal('hide');
+            });
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<template v-if=\"!progress.load\">\n\n    <div class=\"modal-body\">\n\n        <form class=\"form-inline\">\n            <select class=\"form-control input-primary\" v-model=\"heroesNew\">\n                <option v-for=\"hero in book\" v-bind:value=\"{ id: hero.id }\">{{ hero.name }}</option>\n            </select>\n            <button class=\"btn btn-primary btn-header\" type=\"submit\" v-on:click.prevent=\"create\" :disabled=\"updating ? true : null\">\n                <span v-show=\"!saving\">Add</span>\n                <span v-show=\"saving\"><i class=\"fa fa-spinner fa-pulse fa-fw\"></i></span>\n            </button>\n        </form>\n\n    </div>\n\n</template>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\modals\\hero-add.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../components/spinner.vue":73,"../resources/book.vue":82,"../resources/userHeroes.vue":84,"vue":68,"vue-hot-reload-api":42}],80:[function(require,module,exports){
 'use strict';
 
 var _keys = require('babel-runtime/core-js/object/keys');
@@ -32324,8 +32606,129 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Spinner = require('../components/spinner.vue');
 var Percent = require('../filters/percent.vue');
+var Eval = require('../filters/eval.vue');
+var Formulas = require('../mixins/formulas.vue');
+
+var Heroes = require('../resources/heroes.vue');
 
 module.exports = {
+    mixins: [Heroes, Formulas],
+    filters: {
+        percent: Percent,
+        eval: Eval
+    },
+    components: {
+        spinner: Spinner
+    },
+    props: {
+        data: {
+            type: Object,
+            required: true
+        }
+    },
+    data: function data() {
+        return {
+            session: session,
+            progress: modalProgress,
+            deleting: false,
+            updating: false,
+            hero: {},
+            skillPower: 1
+        };
+    },
+    computed: {
+        damage: function damage() {
+            return this.calculateDamage(this.hero.atk, this.skillPower);
+            //return this.heroAtk * (this.skillPwr/100);
+        },
+        crDamage: function crDamage() {
+            return this.calculateCritDamage(this.damage, this.hero.cd);
+            //this.damage + this.damage * (this.heroCd/100);
+        },
+        avgDamage: function avgDamage() {
+            return this.calculateAvgDamage(this.damage, this.hero.cr, this.crDamage);
+        }
+    },
+    watch: {
+        'data': function data() {
+            this.reset();
+        }
+    },
+    ready: function ready() {
+        this.init();
+    },
+    methods: {
+        init: function init() {
+            this.progress.load++;
+            this.heroesShow(this.data.hero_id, function (response) {
+                this.progress.load--;
+                if ((0, _keys2.default)(response.data).length !== 0) this.$set('hero', response.data);
+            });
+        },
+        reset: function reset() {
+            this.deleting = false;
+            this.updating = false;
+            this.init();
+        },
+        save: function save() {
+            this.updating = true;
+            this.heroesUpdate(this.data.hero_id, {
+                lvl: this.hero.lvl,
+                powerup_lvl: this.hero.powerup_lvl,
+                grade: this.hero.grade,
+                atk: this.hero.atk,
+                def: this.hero.def,
+                hp: this.hero.hp,
+                spd: this.hero.spd,
+                cr: this.hero.cr,
+                cd: this.hero.cd,
+                pen: this.hero.pen,
+                acc: this.hero.acc,
+                eva: this.hero.eva,
+                _token: this.session.token
+            }, function (response) {
+                this.$dispatch('hero-update', this.data.hero_id, response.data);
+                $('#modal').modal('hide');
+            });
+        },
+        delete: function _delete() {
+            this.deleting = true;
+            this.heroesDelete(this.data.hero_id, function () {
+                this.$dispatch('hero-delete', this.data.hero_id);
+                $('.tooltip').tooltip('destroy');
+                $('#modal').modal('hide');
+            });
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<template v-if=\"!progress.load\">\n\n    <div class=\"modal-header\">\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">×</span></button>\n        <h4 class=\"modal-title\">{{ hero.book.name }}</h4>\n    </div>\n\n    <div class=\"modal-body\">\n\n        <div class=\"row\">\n            <div class=\"col-sm-4 results normal\">\n                <span>{{ damage }}</span>\n                normal damage\n            </div>\n            <div class=\"col-sm-4 results average\">\n                <span>{{ avgDamage }}</span>\n                average damage\n                &nbsp; <i class=\"fa fa-info-circle\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"The average damage based on the heroe's normal damage, crit damage, and crit rate.\"></i>\n            </div>\n            <div class=\"col-sm-4 results critical\">\n                <span>{{ crDamage }}</span>\n                critical damage\n            </div>\n        </div>\n\n        <hr>\n\n        <form id=\"edit-hero\">\n\n            <div class=\"form-group text-center\">\n                <div class=\"hero-grade select-{{hero.grade}}\">\n                    <template v-for=\"n in ['6','5','4','3','2','1']\">\n                        <i class=\"fa fa-star\" value=\"{{ n }}\" v-on:click=\"hero.grade = n\" v-bind:class=\"{ 'selected': n == hero.grade }\">\n                        </i>\n                    </template>\n                </div>\n            </div>\n\n            <div class=\"row\">\n\n                <div class=\"col-sm-6\">\n\n                    <div class=\"row\">\n                        <div class=\"col-xs-8\">\n                            <div class=\"form-group\">\n                                <div class=\"input-group\">\n                                    <span class=\"input-group-addon\">LVL</span>\n                                    <input type=\"text\" class=\"form-control\" placeholder=\"30\" v-model=\"hero.lvl | eval\" number=\"\" lazy=\"\">\n                                </div>\n                            </div>\n                        </div>\n                        <div class=\"col-xs-4\">\n                            <div class=\"form-group\">\n                                <div class=\"input-group\">\n                                    <span class=\"input-group-addon\">+</span>\n                                    <input type=\"text\" class=\"form-control\" placeholder=\"5\" v-model=\"hero.powerup_lvl | eval\" number=\"\" lazy=\"\">\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">ATK</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.atk | eval\" number=\"\" lazy=\"\">\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">DEF</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.def | eval\" number=\"\" lazy=\"\">\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">HP&nbsp;</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.hp | eval\" number=\"\" lazy=\"\">\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">SPD</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"300\" v-model=\"hero.spd | eval\" number=\"\" lazy=\"\">\n                        </div>\n                    </div>\n                </div><!-- /col -->\n\n                <div class=\"col-sm-6\">\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">CR&nbsp;</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.cr | percent | eval\" min=\"10\" max=\"100\" number=\"\" lazy=\"\">\n                            <span class=\"input-group-addon\">%</span>\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">CD&nbsp;</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"100\" v-model=\"hero.cd | percent | eval\" min=\"100\" number=\"\" lazy=\"\">\n                            <span class=\"input-group-addon\">%</span>\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">PEN</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.pen | percent | eval\" number=\"\" lazy=\"\">\n                            <span class=\"input-group-addon\">%</span>\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">ACC</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.acc | percent | eval\" number=\"\" lazy=\"\">\n                            <span class=\"input-group-addon\">%</span>\n                        </div>\n                    </div>\n                    <div class=\"form-group\">\n                        <div class=\"input-group\">\n                            <span class=\"input-group-addon\">EVA</span>\n                            <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.eva | percent | eval\" number=\"\" lazy=\"\">\n                            <span class=\"input-group-addon\">%</span>\n                        </div>\n                    </div>\n                </div><!-- /col -->\n\n            </div><!-- /row -->\n        </form>\n\n    </div>\n\n    <div class=\"modal-footer\">\n        <button type=\"button\" class=\"btn btn-danger pull-left\" v-on:click=\"delete\" :disabled=\"deleting ? true : null\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete Hero\">\n                <i v-show=\"!deleting\" class=\"fa fa-trash-o\"></i>\n                <span v-show=\"deleting\"><i class=\"fa fa-spinner fa-pulse fa-fw\"></i></span>\n        </button>\n        <button type=\"button\" class=\"btn btn-primary\" v-on:click=\"save\" :disabled=\"updating ? true : null\">\n            <span v-show=\"!updating\">Save changes</span>\n            <span v-show=\"updating\"><i class=\"fa fa-spinner fa-pulse fa-fw\"></i></span>\n        </button>\n    </div>\n\n</template>\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\modals\\hero-edit.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../components/spinner.vue":73,"../filters/eval.vue":74,"../filters/percent.vue":75,"../mixins/formulas.vue":76,"../resources/heroes.vue":83,"babel-runtime/core-js/object/keys":1,"vue":68,"vue-hot-reload-api":42}],81:[function(require,module,exports){
+'use strict';
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Percent = require('../filters/percent.vue');
+
+var Heroes = require('../resources/heroes.vue');
+
+module.exports = {
+    mixins: [Heroes],
     filters: {
         percent: Percent
     },
@@ -32341,12 +32744,8 @@ module.exports = {
     data: function data() {
         return {
             session: session,
-            resource: {
-                heroes: this.$resource('//' + session.api + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } })
-            },
-            hero: {},
-            deleting: false,
-            updating: false
+            progress: modalProgress,
+            hero: {}
         };
     },
     watch: {
@@ -32355,245 +32754,163 @@ module.exports = {
         }
     },
     ready: function ready() {
-        this.getHero();
+        this.init();
     },
     methods: {
+        init: function init() {
+            this.progress.load++;
+            this.heroesShow(this.data.hero_id, function (response) {
+                this.progress.load--;
+                if ((0, _keys2.default)(response.data).length !== 0) this.$set('hero', response.data);
+            });
+        },
         reset: function reset() {
-            this.deleting = false;
-            this.updating = false;
-            this.getHero();
-        },
-        getHero: function getHero() {
-            this.resource.heroes.get({ id: this.data.hero_id }).then(function (response) {
-                if ((0, _keys2.default)(response.data).length !== 0) this.$set('hero', response.data);
-                this.$parent.loading = false;
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
-        updateHero: function updateHero() {
-            this.updating = true;
-            this.resource.heroes.update({ id: this.data.hero_id }, {
-                lvl: this.hero.lvl,
-                powerup_lvl: this.hero.powerup_lvl,
-                grade: this.hero.grade,
-                atk: this.hero.atk,
-                def: this.hero.def,
-                hp: this.hero.hp,
-                spd: this.hero.spd,
-                cr: this.hero.cr,
-                cd: this.hero.cd,
-                pen: this.hero.pen,
-                acc: this.hero.acc,
-                eva: this.hero.eva,
-                _token: this.session.token
-            }).then(function (response) {
-                this.$dispatch('hero-update', this.data.hero_id, this.hero);
-                $('#modal').modal('hide');
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
-        deleteHero: function deleteHero() {
-            this.deleting = true;
-            this.resource.heroes.delete({ id: this.data.hero_id }, { _token: this.session.token }).then(function (response) {
-                this.$dispatch('hero-delete', this.data.hero_id);
-                $('#modal').modal('hide');
-            }, function (response) {
-                console.log('error: ', response);
-            });
+            this.init();
         }
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal-header\">\n    <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">×</span></button>\n    <h4 class=\"modal-title\">{{ hero.book.name }}</h4>\n</div>\n\n<div class=\"modal-body\">\n\n    <form id=\"edit-hero\">\n        <div class=\"row\">\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">LVL</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"30\" v-model=\"hero.lvl\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">+</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"5\" v-model=\"hero.powerup_lvl\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ATK</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.atk\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">DEF</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.def\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">HP&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.hp\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">SPD</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"300\" v-model=\"hero.spd\" number=\"\">\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">Grade</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"30\" v-model=\"hero.grade\" number=\"\">\n                        <span class=\"input-group-addon\">\n                            <span v-bind:class=\"{ 'grade': true, 'legendary': hero.book.legendary }\">\n                                <i v-for=\"n in hero.grade\" class=\"fa fa-star\"></i>\n                            </span>\n                        </span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CR&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.cr | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CD&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"100\" v-model=\"hero.cd | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">PEN</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.pen | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ACC</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.acc | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">EVA</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.eva | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n        </div><!-- /row -->\n    </form>\n\n</div>\n\n<div class=\"modal-footer\">\n    <button type=\"button\" class=\"btn btn-danger pull-left\" v-on:click=\"deleteHero\" :disabled=\"deleting ? true : null\" data-toggle=\"tooltip\" data-placement=\"top\" title=\"Delete Hero\">\n            <i v-show=\"!deleting\" class=\"fa fa-trash-o\"></i>\n            <span v-show=\"deleting\"><i class=\"fa fa-spinner fa-pulse fa-fw\"></i></span>\n    </button>\n    <button type=\"button\" class=\"btn btn-primary\" v-on:click=\"updateHero\" :disabled=\"updating ? true : null\">\n        <span v-show=\"!updating\">Save changes</span>\n        <span v-show=\"updating\"><i class=\"fa fa-spinner fa-pulse fa-fw\"></i></span>\n    </button>\n</div>\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal-header\">\n    <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">×</span></button>\n    <h4 class=\"modal-title\">{{ hero.book.name }}</h4>\n</div>\n\n<div class=\"modal-body\">\n\n    <form id=\"edit-hero\">\n        <div class=\"row\">\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">LVL</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"30\" v-model=\"hero.lvl\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ATK</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.atk\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">DEF</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.def\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">HP&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.hp\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">SPD</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"300\" v-model=\"hero.spd\" number=\"\">\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CR&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.cr | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CD&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"100\" v-model=\"hero.cd | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">PEN</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.pen | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ACC</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.acc | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">EVA</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.eva | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n        </div><!-- /row -->\n    </form>\n\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\modals\\hero-edit.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\modals\\hero.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../components/spinner.vue":53,"../filters/percent.vue":54,"babel-runtime/core-js/object/keys":1,"vue":45,"vue-hot-reload-api":19}],59:[function(require,module,exports){
+},{"../filters/percent.vue":75,"../resources/heroes.vue":83,"babel-runtime/core-js/object/keys":1,"vue":68,"vue-hot-reload-api":42}],82:[function(require,module,exports){
 'use strict';
 
-var _keys = require('babel-runtime/core-js/object/keys');
-
-var _keys2 = _interopRequireDefault(_keys);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Percent = require('../filters/percent.vue');
-
 module.exports = {
-    filters: {
-        percent: Percent
-    },
-    props: {
-        data: {
-            type: Object,
-            required: true
-        }
-    },
     data: function data() {
         return {
-            resource: {
-                heroes: this.$resource('//' + session.api + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } })
-            },
-            hero: {}
+            bookResource: this.$resource('//' + session.api + '/book', {}, {}, { xhr: { withCredentials: true } }),
+            book: []
         };
-    },
-    watch: {
-        'data': function data() {
-            this.getHero();
-        }
-    },
-    ready: function ready() {
-        this.getHero();
     },
     methods: {
-        getHero: function getHero() {
-            this.resource.heroes.get({ id: this.data.hero_id }).then(function (response) {
-                if ((0, _keys2.default)(response.data).length !== 0) this.$set('hero', response.data);
-                this.$parent.loading = false;
-            }, function (response) {
+        bookGet: function bookGet(callback) {
+            this.bookResource.get().then(callback, function (response) {
                 console.log('error: ', response);
             });
         }
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<div class=\"modal-header\">\n    <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">×</span></button>\n    <h4 class=\"modal-title\">{{ hero.book.name }}</h4>\n</div>\n\n<div class=\"modal-body\">\n\n    <form id=\"edit-hero\">\n        <div class=\"row\">\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">LVL</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"30\" v-model=\"hero.lvl\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ATK</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.atk\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">DEF</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.def\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">HP&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"1000\" v-model=\"hero.hp\" number=\"\">\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">SPD</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"300\" v-model=\"hero.spd\" number=\"\">\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n            <div class=\"col-sm-6\">\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CR&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.cr | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">CD&nbsp;</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"100\" v-model=\"hero.cd | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">PEN</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.pen | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">ACC</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"0\" v-model=\"hero.acc | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n                <div class=\"form-group\">\n                    <div class=\"input-group\">\n                        <span class=\"input-group-addon\">EVA</span>\n                        <input type=\"text\" class=\"form-control\" placeholder=\"10\" v-model=\"hero.eva | percent\" number=\"\">\n                        <span class=\"input-group-addon\">%</span>\n                    </div>\n                </div>\n            </div><!-- /col -->\n\n        </div><!-- /row -->\n    </form>\n\n</div>\n\n<div class=\"modal-footer\">\n    <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n</div>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\modals\\hero.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\resources\\book.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../filters/percent.vue":54,"babel-runtime/core-js/object/keys":1,"vue":45,"vue-hot-reload-api":19}],60:[function(require,module,exports){
-var __vueify_style__ = require("vueify-insert-css").insert("/* line 6, stdin */\n.chart[_v-14884593] {\n  width: 100%;\n  height: 175px; }\n\n/* line 12, stdin */\n.results span[_v-14884593] {\n  display: block;\n  font-size: 2em; }\n\n/* line 16, stdin */\n.results.normal[_v-14884593] {\n  color: #ffcd81; }\n  /* line 18, stdin */\n  .results.normal span[_v-14884593] {\n    color: #ffb544; }\n\n/* line 22, stdin */\n.results.average[_v-14884593] {\n  color: #87c2ff; }\n  /* line 24, stdin */\n  .results.average span[_v-14884593] {\n    color: #4AA3FF; }\n\n/* line 28, stdin */\n.results.critical[_v-14884593] {\n  color: #ff9e9e; }\n  /* line 30, stdin */\n  .results.critical span[_v-14884593] {\n    color: #FF6161; }\n")
+},{"vue":68,"vue-hot-reload-api":42}],83:[function(require,module,exports){
 'use strict';
 
-var Chart = require('../components/damage-optimization-chart.vue');
-var Formulas = require('../mixins/formulas.vue');
-
 module.exports = {
-    mixins: [Formulas],
-    components: {
-        chart: Chart
-    },
     data: function data() {
         return {
-            heroAtk: 2926,
-            heroCr: 100,
-            heroCd: 166,
-            skillPwr: 190,
-            targetDef: 0
+            heroesResource: this.$resource('//' + session.api + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } })
         };
     },
-    computed: {
-        damage: function damage() {
-            return this.calculateDamage(this.heroAtk, this.skillPwr);
-            //return this.heroAtk * (this.skillPwr/100);
+    methods: {
+        heroesGet: function heroesGet(callback) {
+            this.heroesResource.get().then(callback, function (response) {
+                console.log('error: ', response);
+            });
         },
-        crDamage: function crDamage() {
-            return this.calculateCritDamage(this.damage, this.heroCd);
-            //this.damage + this.damage * (this.heroCd/100);
+        heroesShow: function heroesShow(id, callback) {
+            this.heroesResource.get({ id: id }).then(callback, function (response) {
+                console.log('error: ', response);
+            });
         },
-        avgDamage: function avgDamage() {
-            return this.calculateAvgDamage(this.damage, this.heroCr, this.crDamage);
-            //return ( this.damage * ((100 - this.heroCr)/100) ) + ( this.crDamage * (this.heroCr/100) );
+        heroesUpdate: function heroesUpdate(id, data, callback) {
+            this.heroesResource.update({ id: id }, data).then(callback, function (response) {
+                console.log('error: ', response);
+            });
+        },
+        heroesDelete: function heroesDelete(id, callback) {
+            this.heroesResource.delete({ id: id }, { _token: this.session.token }).then(callback, function (response) {
+                console.log('error: ', response);
+            });
         }
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1 _v-14884593=\"\">Damage Calculator</h1>\n\n<div class=\"row\" _v-14884593=\"\">\n    <div class=\"col-sm-3\" _v-14884593=\"\">\n        <h2 _v-14884593=\"\">Hero</h2>\n        <form _v-14884593=\"\">\n            <div class=\"form-group\" _v-14884593=\"\">\n                <label for=\"hero-atk\" _v-14884593=\"\">ATK</label>\n                <input type=\"text\" class=\"form-control\" id=\"hero-atk\" placeholder=\"1000\" v-model=\"heroAtk\" number=\"\" _v-14884593=\"\">\n            </div>\n            <div class=\"form-group\" _v-14884593=\"\">\n                <label for=\"hero-cr\" _v-14884593=\"\">Crit Rate</label>\n                <div class=\"input-group\" _v-14884593=\"\">\n                    <input type=\"text\" class=\"form-control\" id=\"hero-cr\" placeholder=\"10\" v-model=\"heroCr\" number=\"\" _v-14884593=\"\">\n                    <div class=\"input-group-addon\" _v-14884593=\"\">%</div>\n                </div>\n            </div>\n            <div class=\"form-group\" _v-14884593=\"\">\n                <label for=\"hero-cd\" _v-14884593=\"\">Crit Damage</label>\n                <div class=\"input-group\" _v-14884593=\"\">\n                    <input type=\"text\" class=\"form-control\" id=\"hero-cd\" placeholder=\"100\" v-model=\"heroCd\" number=\"\" _v-14884593=\"\">\n                    <div class=\"input-group-addon\" _v-14884593=\"\">%</div>\n                </div>\n            </div>\n        </form>\n    </div>\n    <div class=\"col-sm-3\" _v-14884593=\"\">\n        <h2 _v-14884593=\"\">Skill</h2>\n        <form _v-14884593=\"\">\n            <div class=\"form-group\" _v-14884593=\"\">\n                <label for=\"skill-power\" _v-14884593=\"\">Power</label>\n                <div class=\"input-group\" _v-14884593=\"\">\n                    <input type=\"text\" class=\"form-control\" id=\"skill-power\" placeholder=\"180\" v-model=\"skillPwr\" number=\"\" _v-14884593=\"\">\n                    <div class=\"input-group-addon\" _v-14884593=\"\">%</div>\n                </div>\n            </div>\n        </form>\n\n        <h2 _v-14884593=\"\">Target</h2>\n        <form _v-14884593=\"\">\n            <div class=\"form-group\" _v-14884593=\"\">\n                <label for=\"target-def\" _v-14884593=\"\">DEF</label>\n                <input type=\"text\" class=\"form-control\" id=\"target-def\" placeholder=\"500\" v-model=\"targetDef\" number=\"\" _v-14884593=\"\">\n            </div>\n        </form>\n    </div>\n    <div class=\"col-sm-6\" _v-14884593=\"\">\n        <h2 _v-14884593=\"\">Results</h2>\n        <div class=\"row\" _v-14884593=\"\">\n            <div class=\"col-sm-4 results normal\" _v-14884593=\"\">\n                <span _v-14884593=\"\">{{ damage }}</span>\n                normal damage\n            </div>\n            <div class=\"col-sm-4 results average\" _v-14884593=\"\">\n                <span _v-14884593=\"\">{{ avgDamage }}</span>\n                average damage\n            </div>\n            <div class=\"col-sm-4 results critical\" _v-14884593=\"\">\n                <span _v-14884593=\"\">{{ crDamage }}</span>\n                critical damage\n            </div>\n        </div>\n\n        <h2 _v-14884593=\"\">Optimizations</h2>\n        <div class=\"row\" _v-14884593=\"\">\n            <div class=\"col-sm-6\" _v-14884593=\"\">\n                <small class=\"pull-right\" _v-14884593=\"\">Average Damage with +/- ATK</small>\n                <chart stat=\"atk\" :power=\"skillPwr\" :critdmg=\"heroCd\" :critrate=\"heroCr\" :attack=\"heroAtk\" _v-14884593=\"\"></chart>\n            </div>\n            <div class=\"col-sm-6\" _v-14884593=\"\">\n                <small class=\"pull-right\" _v-14884593=\"\">Average Damage with +/- Crit Damage</small>\n                <chart stat=\"cd\" :power=\"skillPwr\" :critdmg=\"heroCd\" :critrate=\"heroCr\" :attack=\"heroAtk\" _v-14884593=\"\"></chart>\n            </div>\n        </div>\n    </div>\n</div>\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\views\\calculator.vue"
-  module.hot.dispose(function () {
-    require("vueify-insert-css").cache["/* line 6, stdin */\n.chart[_v-14884593] {\n  width: 100%;\n  height: 175px; }\n\n/* line 12, stdin */\n.results span[_v-14884593] {\n  display: block;\n  font-size: 2em; }\n\n/* line 16, stdin */\n.results.normal[_v-14884593] {\n  color: #ffcd81; }\n  /* line 18, stdin */\n  .results.normal span[_v-14884593] {\n    color: #ffb544; }\n\n/* line 22, stdin */\n.results.average[_v-14884593] {\n  color: #87c2ff; }\n  /* line 24, stdin */\n  .results.average span[_v-14884593] {\n    color: #4AA3FF; }\n\n/* line 28, stdin */\n.results.critical[_v-14884593] {\n  color: #ff9e9e; }\n  /* line 30, stdin */\n  .results.critical span[_v-14884593] {\n    color: #FF6161; }\n"] = false
-    document.head.removeChild(__vueify_style__)
-  })
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\resources\\heroes.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../components/damage-optimization-chart.vue":49,"../mixins/formulas.vue":55,"vue":45,"vue-hot-reload-api":19,"vueify-insert-css":46}],61:[function(require,module,exports){
+},{"vue":68,"vue-hot-reload-api":42}],84:[function(require,module,exports){
 'use strict';
 
-var _keys = require('babel-runtime/core-js/object/keys');
+module.exports = {
+    data: function data() {
+        return {
+            userHeroesResource: this.$resource('//' + session.api + '/users/' + session.user.app.id + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } })
+        };
+    },
+    methods: {
+        userHeroesGet: function userHeroesGet(callback) {
+            this.userHeroesResource.get().then(callback, function (response) {
+                console.log('error: ', response);
+            });
+        },
+        userHeroesCreate: function userHeroesCreate(id, callback) {
+            this.userHeroesResource.save({}, { book_id: id, _token: this.session.token }).then(callback, function (response) {
+                console.log('error: ', response);
+            });
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\resources\\userHeroes.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"vue":68,"vue-hot-reload-api":42}],85:[function(require,module,exports){
+'use strict';
 
-var _keys2 = _interopRequireDefault(_keys);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Hero = require('../components/hero.vue');
+var Spinner = require('../components/spinner.vue');
 
 module.exports = {
     components: {
-        hero: Hero
+        spinner: Spinner
     },
     data: function data() {
         return {
             session: session,
-            progress: this.$parent.progress,
-            resource: {
-                'heroes': this.$resource('//' + session.api + '/users/' + session.user.app.id + '/heroes{/id}', {}, {}, { xhr: { withCredentials: true } }),
-                'book': this.$resource('//' + session.api + '/book', {}, {}, { xhr: { withCredentials: true } })
-            },
-            book: [],
-            heroes: [],
-            newHero: {
-                'id': 1
-            }
+            progress: progress
         };
     },
-    created: function created() {
-        this.progress.start();
-    },
     ready: function ready() {
-        this.getHeroes();
-        this.getBook();
+        this.init();
     },
     methods: {
-        getHeroes: function getHeroes() {
-            this.resource.heroes.get().then(function (response) {
-                if ((0, _keys2.default)(response.data).length !== 0) this.$set('heroes', response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
-        createHero: function createHero() {
-            this.resource.heroes.save({}, { book_id: this.newHero.id, _token: this.session.token }).then(function (response) {
-                this.heroes.push(response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        },
-        getBook: function getBook() {
-            this.resource.book.get().then(function (response) {
-                this.$set('book', response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
-            });
-        }
+        init: function init() {},
+        reset: function reset() {}
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
@@ -32602,14 +32919,14 @@ if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\views\\dashboard.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\_view.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../components/hero.vue":50,"babel-runtime/core-js/object/keys":1,"vue":45,"vue-hot-reload-api":19}],62:[function(require,module,exports){
+},{"../components/spinner.vue":73,"vue":68,"vue-hot-reload-api":42}],86:[function(require,module,exports){
 'use strict';
 
 var _keys = require('babel-runtime/core-js/object/keys');
@@ -32618,53 +32935,133 @@ var _keys2 = _interopRequireDefault(_keys);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var View = require('./_view.vue');
+var Modals = require('../mixins/modals.vue');
 var Hero = require('../components/hero.vue');
 
+var UserHeroes = require('../resources/userHeroes.vue');
+
 module.exports = {
+    extends: View,
+    mixins: [UserHeroes, Modals],
     components: {
         hero: Hero
     },
     data: function data() {
         return {
-            session: session,
-            progress: this.$parent.progress,
-            resource: {
-                'heroes': this.$resource('//' + session.api + '/heroes', {}, {}, { xhr: { withCredentials: true } })
-            },
-            heroes: [],
-            search: ''
+            heroes: []
         };
     },
-    created: function created() {
-        this.progress.start();
-    },
-    ready: function ready() {
-        this.getHeroes();
-    },
     methods: {
-        getHeroes: function getHeroes() {
-            this.resource.heroes.get().then(function (response) {
+        init: function init() {
+            this.progress.load++;
+            this.userHeroesGet(function (response) {
+                this.progress.load--;
                 if ((0, _keys2.default)(response.data).length !== 0) this.$set('heroes', response.data);
-                this.progress.done();
-            }, function (response) {
-                console.log('error: ', response);
             });
+        },
+        reset: function reset() {
+            this.init();
+        }
+    },
+    events: {
+        'hero-add-global': function heroAddGlobal(hero) {
+            this.heroes.push(hero);
         }
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n<h1>Guild Heroes</h1>\n<form class=\"form-inline form-header\" role=\"search\">\n    <div class=\"form-group\">\n        <input type=\"search\" placeholder=\"Search\" name=\"search\" class=\"form-control input-primary\" v-model=\"search\">\n    </div>\n</form>\n\n<template v-if=\"heroes.length !== 0\">\n    <template v-for=\"hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1\">\n        <hero :hero=\"hero\"></hero>\n    </template>\n</template>\n<p v-else=\"\"><em>No heroes to display! ):</em></p>\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<h1>My Heroes</h1>\n\n<div v-if=\"progress.load\"><!-- Loading -->\n    <spinner :opts=\"{color:'#666',shadow:false}\"></spinner>\n</div>\n<template v-else=\"\"><!-- After load -->\n\n    <form class=\"form-inline form-header\" role=\"search\">\n        <div class=\"form-group\">\n            <input type=\"search\" placeholder=\"Search\" name=\"search\" class=\"form-control input-primary\" v-model=\"search\">\n        </div>\n    </form>\n\n    <div class=\"user-hero add clearfix\" v-on:click=\"openModal('hero-add',{},'small')\">\n        <i class=\"fa fa-plus-circle\" aria-hidden=\"true\"></i>\n    </div><!--\n\n    --><template v-if=\"heroes.length !== 0\">\n        <template v-for=\"hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1\">\n            <hero :hero.sync=\"hero\" :edit=\"true\" :show-user=\"false\"></hero>\n        </template>\n    </template>\n    <p v-else=\"\"><em>You haven't saved any heroes! ):</em></p>\n\n</template>\n\n"
 if (module.hot) {(function () {  module.hot.accept()
   var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "c:\\Users\\michelle\\_VM\\legendaries.dev\\resources\\assets\\js\\views\\guild-heroes.vue"
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\dashboard.vue"
   if (!module.hot.data) {
     hotAPI.createRecord(id, module.exports)
   } else {
     hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"../components/hero.vue":50,"babel-runtime/core-js/object/keys":1,"vue":45,"vue-hot-reload-api":19}]},{},[47]);
+},{"../components/hero.vue":71,"../mixins/modals.vue":77,"../resources/userHeroes.vue":84,"./_view.vue":85,"babel-runtime/core-js/object/keys":1,"vue":68,"vue-hot-reload-api":42}],87:[function(require,module,exports){
+'use strict';
+
+var _keys = require('babel-runtime/core-js/object/keys');
+
+var _keys2 = _interopRequireDefault(_keys);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var View = require('../_view.vue');
+var Hero = require('../../components/hero.vue');
+
+var Heroes = require('../../resources/heroes.vue');
+
+module.exports = {
+    extends: View,
+    mixins: [Heroes],
+    components: {
+        hero: Hero
+    },
+    data: function data() {
+        return {
+            search: '',
+            heroes: []
+        };
+    },
+    methods: {
+        init: function init() {
+            progress.load++;
+            this.heroesGet(function (response) {
+                progress.load--;
+                if ((0, _keys2.default)(response.data).length !== 0) this.$set('heroes', response.data);
+            });
+        }
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<h1>Guild Heroes</h1>\n\n<div v-if=\"progress.load\"><!-- Loading -->\n    <spinner :opts=\"{color:'#666',shadow:false}\"></spinner>\n</div>\n<template v-else=\"\"><!-- After load -->\n\n    <form class=\"form-inline form-header\" role=\"search\">\n        <div class=\"form-group\">\n            <input type=\"search\" placeholder=\"Search\" name=\"search\" class=\"form-control input-primary\" v-model=\"search\">\n        </div>\n    </form>\n\n    <template v-if=\"heroes.length !== 0\">\n        <template v-for=\"hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1\">\n            <hero :hero=\"hero\"></hero>\n        </template>\n    </template>\n    <p v-else=\"\"><em>No heroes to display! ):</em></p>\n\n</template>\n\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\guild\\heroes.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../../components/hero.vue":71,"../../resources/heroes.vue":83,"../_view.vue":85,"babel-runtime/core-js/object/keys":1,"vue":68,"vue-hot-reload-api":42}],88:[function(require,module,exports){
+'use strict';
+
+var View = require('../_view.vue');
+
+module.exports = {
+    extends: View,
+    data: function data() {
+        return {
+            session: session,
+            search: ''
+        };
+    },
+    methods: {
+        init: function init() {}
+    }
+};
+if (module.exports.__esModule) module.exports = module.exports.default
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n<h1>Guild Members</h1>\n\n<div v-if=\"progress.load\"><!-- Loading -->\n    <spinner :opts=\"{color:'#666',shadow:false}\"></spinner>\n</div>\n<template v-else=\"\"><!-- After load -->\n\n    <form class=\"form-inline form-header\" role=\"search\">\n        <div class=\"form-group\">\n            <input type=\"search\" placeholder=\"Search\" name=\"search\" class=\"form-control input-primary\" v-model=\"search\">\n        </div>\n    </form>\n\n    <div class=\"row\" v-if=\"session.guild.members.length !== 0\">\n        <div class=\"col-sm-3 member\" v-for=\"member in session.guild.members | filterBy search\">\n            <img v-if=\"member.user.avatar\" class=\"avatar pull-left\" v-bind:src=\"'https://cdn.discordapp.com/avatars/' + member.user.id + '/' + member.user.avatar + '.jpg'\" alt=\"{{ member.user.username }}\">\n            <span v-else=\"\" class=\"avatar-temp fa-stack fa-lg\">\n                <i class=\"fa fa-circle fa-stack-2x\"></i>\n                <i class=\"fa fa-user fa-stack-1x fa-inverse\"></i>\n            </span>\n            <span class=\"\">{{ member.user.username }}</span>\n        </div>\n    </div>\n    <p v-else=\"\"><em>No members to display! ):</em></p>\n\n</template>\n\n"
+if (module.hot) {(function () {  module.hot.accept()
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), true)
+  if (!hotAPI.compatible) return
+  var id = "C:\\Users\\Michelle\\Dev\\legendaries.dev\\resources\\assets\\js\\views\\guild\\members.vue"
+  if (!module.hot.data) {
+    hotAPI.createRecord(id, module.exports)
+  } else {
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+  }
+})()}
+},{"../_view.vue":85,"vue":68,"vue-hot-reload-api":42}]},{},[69]);
 
 //# sourceMappingURL=app.js.map

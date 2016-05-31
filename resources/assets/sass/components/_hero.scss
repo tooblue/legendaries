@@ -1,7 +1,7 @@
 .user-hero {
     display: inline-block;
     width: 23%;
-    font-size: 9px;
+    font-size: 7px;
     padding: 8px;
     padding-bottom: 10px;
     cursor: pointer;
@@ -9,18 +9,62 @@
     margin: 0px 0px 8px 16px;
     position: relative;
     border: 2px solid #eee;
+    height: 87px;
+    strong {
+        font-size: 9px;
+    }
+    &.add {
+        font-size: 45px;
+        text-align: center;
+        color: #fff;
+        background-color: #eee;
+        overflow: hidden;
+        &:hover {
+            background-color: #ddd;
+            border-color: #ddd;
+        }
+    }
+    .level, .powerup-lvl {
+        position: absolute;
+        font-weight: bold;
+        color: yellow;
+        text-align: center;
+        text-shadow: 2px 0 0px black,-2px 0 0px black,0 2px 0px black,0 -2px 0px black;
+    }
+    .level {
+        font-size: 14px;
+        bottom: 8px;
+        right: 121px;
+    }
+    .powerup-lvl {
+        font-size: 11px;
+        top: 18px;
+        right: 121px;
+    }
     & > div {
-        margin-left: 10px;
-        margin-top: 18px;
+        margin-left: 6px;
+        margin-top: 3px;
         ul {
             margin: 0;
             padding: 0;
             list-style: none;
         }
-    }
-    & > div:first-of-type {
-        width: 37%;
-        margin: 0;
+        &:first-of-type {
+            width: 37%;
+            margin: 0;
+        }
+        &:nth-of-type(2) {
+            width: 32%;
+            li.hero-name {
+                height: 13px;
+                overflow: hidden;
+                &.overflown::after {
+                    content: "...";
+                    position: absolute;
+                    top: 12px;
+                }
+            }
+        }
     }
     &.fire {
         color: #4C0000;
@@ -62,16 +106,22 @@
         margin-bottom: 5px;
         margin: -1px 0px 5px 3px;
         display: block;
-        color: $dark-yellow;
+        color: yellow;
+        position: absolute;
+        top: 9px;
+        right: 120px;
+        -webkit-filter: drop-shadow(2px 2px 1px rgba(0,0,0,.65));
+        -webkit-text-stroke: 1px rgba(0,0,0,.65);
         &.legendary {
             color: #FF6A00;
         }
     }
     .user {
+        font-size: 9px;
         position: absolute;
-        top: 4px;
-        right: -3px;
-        background-color: $dark-yellow;
+        top: -9px;
+        right: -8px;
+        background-color: #263238;
         color: #fff;
         letter-spacing: 1px;
         padding: 2px 10px;
@@ -84,7 +134,20 @@
             left: -16px;
             top: 0px;
             position: absolute;
-            border-right-color: $dark-yellow;
+            border-right-color: #263238;
+        }
+        &::after {
+            content: "";
+            display: block;
+            position: absolute;
+            bottom: -3px;
+            right: 1px;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid darken(#263238, 25);
+            transform: rotateZ(-45deg);
         }
     }
     .tags {
@@ -104,5 +167,22 @@
             height: 15px;
             display: inline-block;
         }
+    }
+}
+
+form#edit-hero {
+    .hero-grade {
+        direction: rtl;
+        display: inline-block;
+        letter-spacing: 15px;
+    }
+    .fa-star {
+        color: #cccccc;
+        font-size: 25px;
+        cursor: pointer;
+    }
+    .fa-star:hover, .fa-star:hover ~ .fa-star,
+    .fa-star.selected, .fa-star.selected ~ .fa-star {
+        color: orange;
     }
 }

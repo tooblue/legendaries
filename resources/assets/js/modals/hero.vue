@@ -86,18 +86,20 @@
 
     </div>
 
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    </div>
-
 </template>
 
 <script>
     var Percent = require('../filters/percent.vue');
 
+    var Heroes = require('../resources/heroes.vue');
+
     module.exports = {
+        mixins: [Heroes],
         filters: {
             percent: Percent
+        },
+        components: {
+            spinner: Spinner
         },
         props: {
             data: {
@@ -107,31 +109,31 @@
         },
         data: function() {
             return {
-                resource: {
-                    heroes: this.$resource('//' + session.api + '/heroes{/id}',{},{},{ xhr: { withCredentials: true } })
-                },
-                hero: {}
+                session: session,
+                progress: modalProgress,
+                hero: {},
             }
         },
         watch: {
             'data': function () {
-                this.getHero();
+                this.reset();
             }
         },
         ready: function () {
-            this.getHero();
+            this.init();
         },
         methods: {
-            getHero: function() {
-                this.resource.heroes
-                    .get({id:this.data.hero_id}).then(function (response) {
-                        if ( Object.keys(response.data).length !== 0 )
-                            this.$set('hero', response.data);
-                            this.$parent.loading = false;
-                    }, function (response) {
-                        console.log('error: ', response);
-                    });
-            }
+            init: function () {
+                this.progress.load++;
+                this.heroesShow(this.data.hero_id, function(response){
+                    this.progress.load--;
+                    if ( Object.keys(response.data).length !== 0 )
+                        this.$set('hero', response.data);
+                });
+            },
+            reset: function () {
+                this.init();
+            },
         }
     }
 </script>

@@ -18,6 +18,7 @@
     }
     .content, .content-left {
         position: relative;
+        min-height: 400px;
     }
 }
 
@@ -50,7 +51,7 @@
 
 .modal {
     .modal-header {
-        background-color: $dark-yellow;
+        background-color: $accent-color;
         color: #fff;
         text-transform: uppercase;
         .modal-title {
@@ -66,7 +67,7 @@
     }
     .modal-content {
         border-radius: 0px;
-        border: 3px solid $dark-yellow;
+        border: 3px solid $accent-color;
     }
 }
 
@@ -94,6 +95,37 @@
             top: 2px;
             right: 0;
             z-index: 100;
+        }
+    }
+}
+
+
+$normal: #ffb544;
+$average: #4AA3FF;
+$critical: #FF6161;
+
+.results {
+    text-align: center;
+    span {
+        display: block;
+        font-size: 2em;
+    }
+    &.normal {
+        color: lighten($normal, 12%);
+        span {
+            color: $normal;
+        }
+    }
+    &.average {
+        color: lighten($average, 12%);
+        span {
+            color: $average;
+        }
+    }
+    &.critical {
+        color: lighten($critical, 12%);
+        span {
+            color: $critical;
         }
     }
 }

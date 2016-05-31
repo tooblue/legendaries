@@ -13,6 +13,7 @@
             background-color: transparent;
             border: none;
             padding: 12px 15px;
+            border-left: 5px solid #fff;
             &:first-of-type {
                 border-top-left-radius: 4px;
                 border-top-right-radius: 4px;
@@ -30,36 +31,40 @@
                 position: relative;
                 top: 3px;
             }
+            &.v-link-active {
+                border-left: 5px solid $accent-color;
+            }
             &:hover, &:active {
-                color: #fff;
-                background-color: #666;
+                color: $accent-color;
+                border-left: 5px solid $accent-color;
                 .badge {
-                    background-color: #fff;
-                    color: #FFC800;
+                    background-color: $accent-color;
+                    color: #fff;
                 }
                 i {
-                    color: #FFC800;
+                    color: $accent-color;
                 }
             }
             &.user {
                 padding: 15px;
                 text-transform: none;
                 border: none;
-                border-radius: 5px;
+                border-bottom: 1px solid #eee;
                 &:hover, &:active {
                     color: #666;
                     background-color: #fff;
                 }
                 .gh-avatar {
-                    width: 35%;
+                    width: 25%;
                     border: 5px solid #fff;
+                    border-radius: 50px;
                 }
                 .stats {
                     position: relative;
-                    width: 60%;
+                    width: 70%;
                     p {
                         padding: 3px;
-                        margin: 0px 0px 7px 0px;
+                        margin: 5px 0px 0px 0px;
                         position: relative;
                         &:after {
                             color: #000;
@@ -70,11 +75,8 @@
                             z-index: 100;
                             pointer-events: none;
                         }
-                        &.bookmark:after {
+                        &.rank:after {
                             content: "\f02e";
-                        }
-                        &.comment:after {
-                            content: "\f075";
                         }
                         &.usr:after {
                             content: "\f007";

@@ -1,7 +1,6 @@
 <template>
     <div class="user-hero clearfix {{ hero.book.attribute.name }}"
-        v-on:click="openModal(modal,{'hero_id':hero.id})"
-        data-toggle="tooltip" data-placement="left" title="{{ hero.book.name }}">
+        v-on:click="openModal(modal,{'hero_id':hero.id})">
         <span class="user" v-if="showUser" v-for="member in session.guild.members | filterBy hero.user.discord_id in 'user.id'">
             {{ member.user.username }}
         </span>
@@ -10,10 +9,16 @@
                 <i v-for="n in hero.grade" class="fa fa-star"></i>
             </span>
             <img :src="hero.book.img" class="img-responsive">
+            <span class="level">{{ hero.lvl }}</span>
+            <span v-if="hero.powerup_lvl" class="powerup-lvl">+{{ hero.powerup_lvl }}</span>
         </div>
         <div class="pull-left">
             <ul>
-                <li>LVL <strong>{{ hero.lvl }}</strong> &nbsp; <span v-if="hero.powerup_lvl">+{{ hero.powerup_lvl }}</span></li>
+                <li v-bind:class="{ 'hero-name': true, 'overflown': overflown }"
+                    :data-toggle="overflown ? 'tooltip' : null" data-toggle="tooltip"
+                    title="{{ hero.book.name }}">
+                        <strong>{{ hero.book.name }}</strong>
+                </li>
                 <li>A <strong>{{ hero.atk }}</strong></li>
                 <li>D <strong>{{ hero.def }}</strong></li>
                 <li>H <strong>{{ hero.hp }}</strong></li>
@@ -22,11 +27,11 @@
         </div>
         <div class="pull-right">
             <ul>
-                <li>CR&nbsp; <strong>{{ hero.cr * 100 }}%</strong></li>
-                <li>CD&nbsp; <strong>{{ hero.cd * 100 }}%</strong></li>
-                <li>PEN <strong>{{ hero.pen * 100 }}%</strong></li>
-                <li>ACC <strong>{{ hero.acc * 100 }}%</strong></li>
-                <li>EVA <strong>{{ hero.eva * 100 }}%</strong></li>
+                <li>CR&nbsp; <strong>{{ hero.cr * 100 }}</strong>%</li>
+                <li>CD&nbsp; <strong>{{ hero.cd * 100 }}</strong>%</li>
+                <li>PEN <strong>{{ hero.pen * 100 }}</strong>%</li>
+                <li>ACC <strong>{{ hero.acc * 100 }}</strong>%</li>
+                <li>EVA <strong>{{ hero.eva * 100 }}</strong>%</li>
             </ul>
         </div>
         <div class="tags">
@@ -67,11 +72,18 @@
         },
         data: function() {
             return {
-                session: session
+                session: session,
+                overflown: false
             }
+        },
+        ready: function () {
+            var heroName = $(this.$el).find('.hero-name');
+            if ( heroName.prop('scrollHeight') > heroName.height() )
+                this.overflown = true;
         },
         events: {
             'hero-update-global': function(hero_id, hero) {
+                console.log(hero_id, hero);
                 if ( this.hero.id == hero_id )
                     this.$set('hero', hero);
             },

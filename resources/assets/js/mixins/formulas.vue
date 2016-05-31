@@ -2,13 +2,13 @@
     module.exports = {
         methods: {
             calculateDamage: function (heroAtk, skillPwr) {
-                return Math.round(heroAtk * (skillPwr/100));
+                return Math.round(heroAtk * skillPwr);
             },
             calculateCritDamage: function (damage, heroCd) {
-                return Math.round(damage + damage * (heroCd/100));
+                return Math.round(damage + damage * heroCd);
             },
             calculateAvgDamage: function (damage, heroCr, crDamage) {
-                return Math.round(( damage * ((100 - heroCr)/100) ) + ( crDamage * (heroCr/100) ));
+                return Math.round(( damage * (1 - heroCr) ) + ( crDamage * heroCr ));
             },
         },
     }

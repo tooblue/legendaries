@@ -18,8 +18,6 @@
 </template>
 
 <script>
-    var nprogress = require('nprogress');
-
     var Sidebar = require('./components/sidebar.vue');
     var Modal = require('./modals/_modal.vue');
 
@@ -27,12 +25,24 @@
         data: function() {
             return {
                 session: session,
-                progress: nprogress.configure({ parent: '#app' })
+                progress: progress
             }
         },
         components: {
             sidebar: Sidebar,
             modal: Modal
+        },
+        watch: {
+            'progress.load': function (val, oldVal) {
+                if ( !val ) {
+                    this.progress.total = 0;
+                    this.progress.bar.done();
+                } else {
+                    if ( val > oldVal )
+                        this.progress.total++;
+                    this.progress.bar.set( (this.progress.total - val) / this.progress.total );
+                }
+            }
         },
         ready: function () {
             // Initialize Bootstrap tooltips
@@ -41,6 +51,9 @@
         events: {
             'modal-open': function(view, data = {}, size = '') {
                 this.$broadcast('modal-open-global', view, data, size)
+            },
+            'hero-add': function(hero) {
+                this.$broadcast('hero-add-global', hero)
             },
             'hero-update': function(hero_id, hero) {
                 this.$broadcast('hero-update-global', hero_id, hero)
