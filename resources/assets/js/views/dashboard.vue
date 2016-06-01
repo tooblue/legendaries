@@ -13,17 +13,17 @@
             </div>
         </form>
 
-        <div class="user-hero add clearfix"
-            v-on:click="openModal('hero-add',{},'small')">
-            <i class="fa fa-plus-circle" aria-hidden="true"></i>
-        </div><!--
-
-        --><template v-if="heroes.length !== 0">
-            <template v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
-                <hero :hero.sync="hero" :edit="true" :show-user="false"></hero>
+        <div class="row">
+            <div class="col-xs-6 col-sm-4 col-md-4 col-lg-3 user-hero add clearfix"
+                v-on:click="openModal('hero-add',{},'small')">
+                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            </div>
+            <template v-if="heroes.length !== 0">
+                <div class="col-xs-6 col-sm-4 col-md-3" v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
+                    <hero :hero.sync="hero" :edit="true" :show-user="false"></hero>
+                </div>
             </template>
-        </template>
-        <p v-else><em>You haven't saved any heroes! ):</em></p>
+        </div>
 
     </template>
 

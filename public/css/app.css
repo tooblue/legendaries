@@ -5958,17 +5958,15 @@ button.close {
               content: "\f007"; }
 
 .user-hero {
-  display: inline-block;
-  width: 23%;
+  width: 100%;
   font-size: 7px;
   padding: 8px;
   padding-bottom: 10px;
   cursor: pointer;
   border-radius: 5px;
-  margin: 0px 0px 8px 16px;
+  margin-bottom: 10px;
   position: relative;
-  border: 2px solid #eee;
-  height: 87px; }
+  border: 2px solid #eee; }
   .user-hero strong {
     font-size: 9px; }
   .user-hero.add {
