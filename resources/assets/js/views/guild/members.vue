@@ -14,13 +14,12 @@
         </form>
 
         <div class="row" v-if="session.guild.members.length !== 0">
-            <div class="col-sm-3 member" v-for="member in session.guild.members | filterBy search">
-                <img v-if="member.user.avatar" class="avatar pull-left" v-bind:src="'https://cdn.discordapp.com/avatars/' + member.user.id + '/' + member.user.avatar + '.jpg'" alt="{{ member.user.username }}">
-                <span v-else class="avatar-temp fa-stack fa-lg">
-                    <i class="fa fa-circle fa-stack-2x"></i>
-                    <i class="fa fa-user fa-stack-1x fa-inverse"></i>
-                </span>
-                <span class="">{{ member.user.username }}</span>
+            <div class="col-xs-6 col-sm-4 col-md-3" v-for="member in session.guild.members | filterBy search | orderBy 'user.username'">
+                <div class="member clearfix">
+                    <img v-if="member.user.avatar" class="avatar pull-left" v-bind:src="'https://cdn.discordapp.com/avatars/' + member.user.id + '/' + member.user.avatar + '.jpg'" alt="{{ member.user.username }}">
+                    <div v-else class="avatar avatar-temp pull-left"></div>
+                    <span class="">{{ member.user.username }}</span>
+                </div>
             </div>
         </div>
         <p v-else><em>No members to display! ):</em></p>

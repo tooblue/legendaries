@@ -1,7 +1,35 @@
 .member {
+    border: 2px solid #eee;
+    border-radius: 5px;
+    padding: 9px;
+    margin-bottom: 15px;
+    height: 58px;
+    cursor: pointer;
+    &:hover {
+        background-color: #eee;
+    }
     .avatar {
-        width: 25%;
-        border: 5px solid #fff;
+        width: 38px;
+        height: 38px;
+        border: none;
         border-radius: 50px;
+        &.avatar-temp {
+            background-color: #666;
+            display: inline-block;
+            &::after {
+                color: #fff;
+                font-family: FontAwesome;
+                content: "\f007";
+                position: relative;
+                top: 3px;
+                left: 11px;
+                font-size: 20px;
+            }
+        }
+    }
+    span {
+        text-align: right;
+        display: block;
+        margin: 9px 15px 0px 0px;
     }
 }
