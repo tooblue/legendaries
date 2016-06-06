@@ -14,12 +14,18 @@
         </form>
 
         <div class="row">
-            <div class="col-xs-6 col-sm-4 col-md-4 col-lg-3 user-hero add clearfix"
-                v-on:click="openModal('hero-add',{},'small')">
-                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            <div class="col-xs-3 col-sm-4 col-md-3 col-lg-3">
+                <div class="user-hero add"
+                    v-on:click="openModal('hero-add',{},'small')">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6 col-md-5">
+                            <img src="/img/hero-tmp.png" class="img-responsive"></img>
+                        </div>
+                    </div>
+                </div>
             </div>
             <template v-if="heroes.length !== 0">
-                <div class="col-xs-6 col-sm-4 col-md-3" v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
+                <div class="col-xs-3 col-sm-4 col-md-3 col-lg-3" v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
                     <hero :hero.sync="hero" :edit="true" :show-user="false"></hero>
                 </div>
             </template>
@@ -55,9 +61,6 @@
                     if ( Object.keys(response.data).length !== 0 )
                         this.$set('heroes', response.data);
                 });
-            },
-            reset: function () {
-                this.init();
             }
         },
         events: {

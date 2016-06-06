@@ -1,38 +1,40 @@
 <template>
-    <div class="user-hero clearfix {{ hero.book.attribute.name }}"
+    <div class="user-hero {{ hero.book.attribute.name }}"
         v-on:click="openModal(modal,{'hero_id':hero.id})">
         <span class="user" v-if="showUser" v-for="member in session.guild.members | filterBy hero.user.discord_id in 'user.id'">
             {{ member.user.username }}
         </span>
-        <div class="pull-left">
-            <span v-bind:class="{ 'grade': true, 'legendary': hero.book.legendary }">
-                <i v-for="n in hero.grade" class="fa fa-star"></i>
-            </span>
-            <img :src="hero.book.img" class="img-responsive">
-            <span class="level">{{ hero.lvl }}</span>
-            <span v-if="hero.powerup_lvl" class="powerup-lvl">+{{ hero.powerup_lvl }}</span>
-        </div>
-        <div class="pull-left">
-            <ul>
-                <li v-bind:class="{ 'hero-name': true, 'overflown': overflown }"
-                    :data-toggle="overflown ? 'tooltip' : null" data-toggle="tooltip"
-                    title="{{ hero.book.name }}">
-                        <strong>{{ hero.book.name }}</strong>
-                </li>
-                <li>A <strong>{{ hero.atk }}</strong></li>
-                <li>D <strong>{{ hero.def }}</strong></li>
-                <li>H <strong>{{ hero.hp }}</strong></li>
-                <li>S <strong>{{ hero.spd }}</strong></li>
-            </ul>
-        </div>
-        <div class="pull-right">
-            <ul>
-                <li>CR&nbsp; <strong>{{ hero.cr * 100 }}</strong>%</li>
-                <li>CD&nbsp; <strong>{{ hero.cd * 100 }}</strong>%</li>
-                <li>PEN <strong>{{ hero.pen * 100 }}</strong>%</li>
-                <li>ACC <strong>{{ hero.acc * 100 }}</strong>%</li>
-                <li>EVA <strong>{{ hero.eva * 100 }}</strong>%</li>
-            </ul>
+        <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-5">
+                <span v-bind:class="{ 'grade': true, 'legendary': hero.book.legendary }">
+                    <i v-for="n in hero.grade" class="fa fa-star"></i>
+                </span>
+                <img :src="hero.book.img" class="img-responsive">
+                <span class="level">{{ hero.lvl }}</span>
+                <span v-if="hero.powerup_lvl" class="powerup-lvl">+{{ hero.powerup_lvl }}</span>
+            </div>
+            <div class="hidden-xs col-sm-6 col-md-6 col-lg-4">
+                <ul>
+                    <li v-bind:class="{ 'hero-name': true, 'overflown': overflown }"
+                        :data-toggle="overflown ? 'tooltip' : null" data-toggle="tooltip"
+                        title="{{ hero.book.name }}">
+                            <strong>{{ hero.book.name }}</strong>
+                    </li>
+                    <li>A <strong>{{ hero.atk }}</strong></li>
+                    <li>D <strong>{{ hero.def }}</strong></li>
+                    <li>H <strong>{{ hero.hp }}</strong></li>
+                    <li>S <strong>{{ hero.spd }}</strong></li>
+                </ul>
+            </div>
+            <div class="hidden-xs hidden-sm hidden-md col-lg-3">
+                <ul>
+                    <li>CR&nbsp; <strong>{{ hero.cr * 100 }}</strong>%</li>
+                    <li>CD&nbsp; <strong>{{ hero.cd * 100 }}</strong>%</li>
+                    <li>PEN <strong>{{ hero.pen * 100 }}</strong>%</li>
+                    <li>ACC <strong>{{ hero.acc * 100 }}</strong>%</li>
+                    <li>EVA <strong>{{ hero.eva * 100 }}</strong>%</li>
+                </ul>
+            </div>
         </div>
         <div class="tags">
             <template v-for="tag in hero.tags">

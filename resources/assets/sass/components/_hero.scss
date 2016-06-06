@@ -1,7 +1,6 @@
 .user-hero {
-    width: 100%;
-    font-size: 7px;
     padding: 8px;
+    font-size: 7px;
     padding-bottom: 10px;
     cursor: pointer;
     border-radius: 5px;
@@ -21,6 +20,16 @@
             background-color: #ddd;
             border-color: #ddd;
         }
+        & .row::after {
+            color: #fff;
+            font-family: FontAwesome;
+            content: "\f055";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
     }
     .level, .powerup-lvl {
         position: absolute;
@@ -30,36 +39,45 @@
         text-shadow: 2px 0 0px black,-2px 0 0px black,0 2px 0px black,0 -2px 0px black;
     }
     .level {
-        font-size: 14px;
-        bottom: 8px;
-        right: 121px;
+        bottom: -1px;
+        right: 10px;
+        @media (min-width: $screen-xs-min) {
+            font-size: 2.5em;
+        }
+        @media (min-width: $screen-sm-min) {
+            font-size: 2em;
+        }
     }
     .powerup-lvl {
         font-size: 11px;
         top: 18px;
         right: 121px;
     }
-    & > div {
-        margin-left: 6px;
-        margin-top: 3px;
-        ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        &:first-of-type {
-            width: 37%;
-            margin: 0;
-        }
-        &:nth-of-type(2) {
-            width: 32%;
-            li.hero-name {
-                height: 13px;
-                overflow: hidden;
-                &.overflown::after {
-                    content: "...";
-                    position: absolute;
-                    top: 12px;
+    & .row {
+        margin: 0px -8px;
+        & > div {
+            position: relative;
+            padding: 0px 8px;
+            ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            &:first-of-type {
+                margin: 0;
+            }
+            &:nth-of-type(2), &:nth-of-type(3) {
+                padding: 0px;
+            }
+            &:nth-of-type(2) {
+                li.hero-name {
+                    height: 13px;
+                    overflow: hidden;
+                    &.overflown::after {
+                        content: "...";
+                        position: absolute;
+                        top: 12px;
+                    }
                 }
             }
         }
@@ -100,14 +118,11 @@
         }
     }
     .grade {
-        margin-top: -1px;
-        margin-bottom: 5px;
-        margin: -1px 0px 5px 3px;
         display: block;
         color: yellow;
         position: absolute;
-        top: 9px;
-        right: 120px;
+        top: -1px;
+        right: 10px;
         -webkit-filter: drop-shadow(2px 2px 1px rgba(0,0,0,.65));
         -webkit-text-stroke: 1px rgba(0,0,0,.65);
         &.legendary {
