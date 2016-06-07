@@ -49,6 +49,9 @@
             pointer-events: none;
         }
     }
+    .navbar-collapse {
+        margin-bottom: 80px;
+    }
     .navbar-nav {
         li > a {
             font-size: 9pt;
@@ -72,9 +75,20 @@
             }
         }
         li.login {
-            margin-left: 10px;
-            padding-left: 10px;
-            border-left: 1px solid rgba(255, 255, 255, .15);
+            @media (min-width: $screen-sm-min) {
+                margin-left: 10px;
+                padding-left: 10px;
+                border-left: 1px solid rgba(255, 255, 255, .15);
+            }
+        }
+    }
+    .navbar-toggle {
+        border: none;
+        &:hover, &:focus {
+            background-color: transparent;
+        }
+        .icon-bar {
+            background-color: #fff;
         }
     }
 }

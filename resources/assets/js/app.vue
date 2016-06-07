@@ -1,12 +1,12 @@
 <template>
     <div class="content">
         <div class="row">
-            <div class="col-sm-9 content-left">
+            <div class="col-xs-12 col-sm-9 content-left">
 
                 <router-view></router-view>
 
             </div>
-            <div class="col-sm-3">
+            <div class="col-xs-12 col-sm-3">
 
                 <sidebar></sidebar>
 

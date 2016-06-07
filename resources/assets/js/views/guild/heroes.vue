@@ -13,12 +13,13 @@
             </div>
         </form>
 
-        <template v-if="heroes.length !== 0">
-            <template v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
-                <hero :hero="hero"></hero>
+        <div class="row">
+            <template v-if="heroes.length !== 0">
+                <div class="col-xs-3 col-sm-4 col-md-3 col-lg-3" v-for="hero in heroes | filterBy search | orderBy 'level' 'grade' 'book.attribute.name' -1">
+                    <hero :hero.sync="hero"></hero>
+                </div>
             </template>
-        </template>
-        <p v-else><em>No heroes to display! ):</em></p>
+        </div>
 
     </template>
 

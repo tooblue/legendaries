@@ -11,7 +11,8 @@
                         :disabled="saving ? true : null"
                         v-model="query"
                         debounce="500"
-                        @submit.prevent>
+                        @submit.prevent
+                        autofocus>
                     <i v-show="saving" class="fa fa-spinner fa-pulse fa-fw form-control-feedback" aria-hidden="true"></i>
 
                     <ul class="typeahead list-group" v-show="book.length > 0 && query.length > 0 && !saving">
