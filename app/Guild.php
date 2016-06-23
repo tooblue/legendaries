@@ -43,6 +43,15 @@ class Guild
         return json_decode($member->getBody());
     }
 
+    public function isApprovedMember($id)
+    {
+        $member = $this->member($id);
+        if ( $member && in_array('173603789331365889', $member->roles) )
+            return true;
+
+        return false;
+    }
+
     public function roles()
     {
         $roles = $this->bot->get('guilds/' . $this->bot->guild_id . '/roles')->getBody();

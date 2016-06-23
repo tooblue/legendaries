@@ -37,9 +37,10 @@ class Authenticate
         }
 
         // if the user is authenticated, but not a guild member (ie. they were deleted)
-        if ( !$this->guild->member(Auth::user()->discord_id) ) {
+        if ( !$this->guild->isApprovedMember(Auth::user()->discord_id) ) {
             Auth::logout();
-            return redirect(route('splash'));
+            return redirect(route('splash'))
+                ->with('status', 'Sorry, this area is for guild members only! If you were recently added to the guild, please wait for a GM to approve your account.');
         }
 
         return $next($request);

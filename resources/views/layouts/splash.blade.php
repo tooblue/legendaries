@@ -28,6 +28,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-NTJT5K');</script>
 <!-- End Google Tag Manager -->
 
+@if ( session('status') )
+    <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{ session('status') }}
+    </div>
+@endif
+
     <div class="site-wrapper">
 
         <div class="site-wrapper-inner">
@@ -42,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <nav>
                             <ul class="nav masthead-nav">
                                 <li><a href="https://guide.legendaries.net">Game Guides</a></li>
-                                <li><a href="https://discordapp.com/channels/172354488613470208/172354488613470208">Guild Chat</a></li>
+                                <li><a href="https://chat.legendaries.net">Guild Chat</a></li>
                             </ul>
                         </nav>
                     </div>
@@ -62,7 +69,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                 <div class="mastfoot">
                     <div class="inner">
-                        <p>Interested in joining us? Sign up for <a href="https://discordapp.com">Discord</a> and send a DM to <strong>Horo#7921</strong>.</p>
+                        <p>Interested in joining us? Sign up for <a href="https://discordapp.com">Discord</a> and send a DM to <strong>Mooofish#3340</strong>.</p>
                     </div>
                 </div>
 

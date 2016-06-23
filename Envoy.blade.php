@@ -1,4 +1,4 @@
-@servers(['production' => 'serverpilot@diamond.legendaries.net', 'localhost' => '127.0.0.1']])
+@servers(['production' => 'legendaries@sapphire.tooblue.org', 'localhost' => '127.0.0.1']])
 
 @macro('deploy')
     down
@@ -27,8 +27,8 @@
 
 @task('rsync', ['on' => 'localhost'])
     gulp --production
-    rsync -azP public/js serverpilot@diamond.legendaries.net:~/apps/legendaries/public
-    rsync -azP public/css serverpilot@diamond.legendaries.net:~/apps/legendaries/public
+    rsync -azP public/js legendaries@sapphire.tooblue.org:~/apps/legendaries/public
+    rsync -azP public/css legendaries@sapphire.tooblue.org:~/apps/legendaries/public
 @endtask
 
 @task('init', ['on' => 'localhost'])

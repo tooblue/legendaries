@@ -82,11 +82,10 @@
                     width: 81%;
                     height: 13px;
                     overflow: hidden;
-                    &.overflown::after {
+                    &.overflown strong::after {
                         content: "...";
                         position: absolute;
-                        top: 1px;
-                        right: 9px;
+                        top: 0px;
                     }
                 }
             }

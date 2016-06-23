@@ -51,13 +51,14 @@ class AuthController extends Controller
             ->getBody();
         $discordUser = json_decode($discordUser);
 
-        if ( $this->guild->member($discordUser->id) ) {
+        if ( $this->guild->isApprovedMember($discordUser->id) ) {
             $user = User::firstOrCreate(['discord_id' => $discordUser->id]); // create the user if they dont exist
             Auth::login($user);
             return redirect()->intended(route('app::dashboard'));
         }
         else {
-            return redirect(route('splash'));
+            return redirect(route('splash'))
+                ->with('status', 'Sorry, this area is for guild members only! If you were recently added to the guild, please wait for a GM to approve your account.');
         }
     }
 
