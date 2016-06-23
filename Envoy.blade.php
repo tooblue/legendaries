@@ -1,4 +1,4 @@
-@servers(['production' => 'legendaries@sapphire.tooblue.org', 'localhost' => '127.0.0.1']])
+@servers(['production' => 'legendaries@sapphire.tooblue.org', 'localhost' => '127.0.0.1'])
 
 @macro('deploy')
     down
