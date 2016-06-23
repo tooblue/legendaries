@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <nav>
                             <ul class="nav masthead-nav">
                                 <li><a href="https://guide.legendaries.net">Game Guides</a></li>
-                                <li><a href="https://chat.legendaries.net">Guild Chat</a></li>
+                                <li><a href="http://chat.legendaries.net">Guild Chat</a></li>
                             </ul>
                         </nav>
                     </div>
