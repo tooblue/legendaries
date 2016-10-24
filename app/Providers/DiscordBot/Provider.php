@@ -28,7 +28,10 @@ class Provider extends ServiceProvider
         $this->app->singleton('\App\Providers\DiscordBot\Client', function ($app) {
             return new DiscordBot([
                 'base_uri' => 'https://discordapp.com/api/',
-                'query' => ['token' => config('services.discordbot.token')]
+				'query' => [],
+				'headers' => [
+					'Authorization' => 'Bot '.config('services.discordbot.token'),
+				]
             ]);
         });
     }

@@ -12,6 +12,13 @@ class Provider extends AbstractProvider implements ProviderInterface
      * Unique Provider Identifier.
      */
     const IDENTIFIER = 'DISCORD';
+	
+	/**
+     * {@inheritdoc}
+     */
+	protected $scopes = [
+        'identify',
+    ];
 
     /**
      * {@inheritdoc}
@@ -39,13 +46,13 @@ class Provider extends AbstractProvider implements ProviderInterface
      */
     protected function getUserByToken($token)
     {
-        $response = $this->getHttpClient()->get('', [
+        $response = $this->getHttpClient()->get(
+            'https://discordapp.com/api/users/@me', [
             'headers' => [
                 'Authorization' => 'Bearer '.$token,
             ],
         ]);
-
-        return json_decode($response->getBody(), true);
+        return json_decode($response->getBody()->getContents(), true);
     }
 
     /**
@@ -54,11 +61,11 @@ class Provider extends AbstractProvider implements ProviderInterface
     protected function mapUserToObject(array $user)
     {
         return (new User())->setRaw($user)->map([
-            'id'       => $user['id'],
-            'nickname' => $user['username'],
-            'name'     => $user['name'],
-            'email'    => $user['email'],
-            'avatar'   => $user['avatar'],
+            'id' => $user['id'],
+            'nickname' => sprintf('%s#%d', $user['username'], $user['discriminator']),
+            'name' => $user['username'],
+            'email' => $user['email'],
+            'avatar' => (is_null($user['avatar'])) ? null : sprintf('https://discordcdn.com/avatars/%s/%s.jpg', $user['id'], $user['avatar']),
         ]);
     }
 
@@ -72,23 +79,4 @@ class Provider extends AbstractProvider implements ProviderInterface
         ]);
     }
 
-    /**
-     * Get the code from the request.
-     *
-     * @return string
-     */
-    public function getCode()
-    {
-        return $this->request->input('code');
-    }
-
-    public function api($token)
-    {
-        return new \GuzzleHttp\Client([
-            'base_uri' => 'https://discordapp.com/api/',
-            'headers' => [
-                'Authorization' => 'Bearer '.$token,
-            ]
-        ]);
-    }
 }

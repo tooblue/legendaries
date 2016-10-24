@@ -31,9 +31,7 @@ class AuthController extends Controller
      */
     public function redirectToProvider()
     {
-        return $this->discord
-            ->with(['scope' => 'identify'])
-            ->redirect();
+        return $this->discord->redirect();
     }
 
     /**
@@ -43,13 +41,7 @@ class AuthController extends Controller
      */
     public function handleProviderCallback(Request $request)
     {
-        $token = $this->discord->getAccessToken($this->discord->getCode());
-
-        // get the Discord user object
-        $discordUser = $this->discord->api($token)
-            ->get('users/@me')
-            ->getBody();
-        $discordUser = json_decode($discordUser);
+        $discordUser = $this->discord->user();
 
         if ( $this->guild->isApprovedMember($discordUser->id) ) {
             $user = User::firstOrCreate(['discord_id' => $discordUser->id]); // create the user if they dont exist

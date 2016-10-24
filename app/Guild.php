@@ -46,10 +46,14 @@ class Guild
     public function isApprovedMember($id)
     {
         $member = $this->member($id);
-        if ( $member && in_array('173603789331365889', $member->roles) )
-            return true;
+		
+		if ( !$member )
+			return false;
+		
+		if ( env('DISCORD_REQUIRED_ROLE') !== '' && !in_array(env('DISCORD_REQUIRED_ROLE'), $member->roles) )
+			return false;
 
-        return false;
+        return true;
     }
 
     public function roles()
